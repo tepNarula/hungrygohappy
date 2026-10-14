@@ -45,15 +45,17 @@ function Index() {
 
   const spin = () => {
     if (restaurants.length === 0 || spinning) return;
+    const randomOne = () =>
+      restaurants[Math.floor(Math.random() * restaurants.length)] ?? null;
     setSpinning(true);
     setPicked(null);
     let ticks = 0;
     const interval = setInterval(() => {
-      setPicked(restaurants[Math.floor(Math.random() * restaurants.length)]);
+      setPicked(randomOne());
       ticks++;
       if (ticks > 14) {
         clearInterval(interval);
-        setPicked(restaurants[Math.floor(Math.random() * restaurants.length)]);
+        setPicked(randomOne());
         setSpinning(false);
       }
     }, 90);

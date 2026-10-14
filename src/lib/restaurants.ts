@@ -1,7 +1,7 @@
 export interface Restaurant {
   id: string;
   name: string;
-  cuisine?: string;
+  cuisine?: string | undefined;
 }
 
 export const DEFAULT_RESTAURANTS: Restaurant[] = [
@@ -43,14 +43,14 @@ export function parseRestaurantsCsv(text: string): {
   if (rows.length === 0) return { restaurants: [], skipped: 0 };
 
   let start = 0;
-  const first = rows[0].map((c) => c.trim().toLowerCase());
+  const first = (rows[0] ?? []).map((c) => c.trim().toLowerCase());
   if (first[0] === "name" || first.includes("cuisine")) start = 1;
 
   const restaurants: Restaurant[] = [];
   let skipped = 0;
 
   for (let i = start; i < rows.length; i++) {
-    const cols = rows[i];
+    const cols = rows[i] ?? [];
     const name = (cols[0] ?? "").trim();
     const cuisine = (cols[1] ?? "").trim();
     if (!name) {
