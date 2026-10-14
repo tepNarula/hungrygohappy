@@ -2,6 +2,8 @@ export interface Restaurant {
   id: string;
   name: string;
   cuisine?: string | undefined;
+  visits?: number;
+  lastVisitedAt?: string;
 }
 
 export const DEFAULT_RESTAURANTS: Restaurant[] = [

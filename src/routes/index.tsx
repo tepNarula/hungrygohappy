@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   loadRestaurants,
   saveRestaurants,
@@ -55,8 +55,22 @@ function Index() {
       ticks++;
       if (ticks > 14) {
         clearInterval(interval);
-        setPicked(randomOne());
+        const finalPick = randomOne();
+        setPicked(finalPick);
         setSpinning(false);
+        if (finalPick) {
+          const next = restaurants.map((r) =>
+            r.id === finalPick.id
+              ? {
+                  ...r,
+                  visits: (r.visits ?? 0) + 1,
+                  lastVisitedAt: new Date().toISOString(),
+                }
+              : r,
+          );
+          setRestaurants(next);
+          saveRestaurants(next);
+        }
       }
     }, 90);
   };
