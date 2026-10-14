@@ -4,7 +4,7 @@ import { loadRestaurants, saveRestaurants, type Restaurant } from "@/lib/restaur
 
 export const Route = createFileRoute("/add")({
   validateSearch: (search: Record<string, unknown>) => ({
-    gmapslink: typeof search.gmapslink === "string" ? search.gmapslink : "",
+    gmapslink: typeof search["gmapslink"] === "string" ? search["gmapslink"] : "",
   }),
   head: () => ({
     meta: [
