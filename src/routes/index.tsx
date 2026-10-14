@@ -142,7 +142,28 @@ function SettingsPanel({
   const [name, setName] = useState("");
   const [cuisine, setCuisine] = useState("");
   const [csvMessage, setCsvMessage] = useState<string | null>(null);
+  const [sortMode, setSortMode] = useState<"visits" | "lastVisit">("visits");
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const sorted = useMemo(() => {
+    const list = [...restaurants];
+    if (sortMode === "visits") {
+      list.sort(
+        (a, b) =>
+          (b.visits ?? 0) - (a.visits ?? 0) ||
+          (b.lastVisitedAt ?? "").localeCompare(a.lastVisitedAt ?? "") ||
+          a.name.localeCompare(b.name),
+      );
+    } else {
+      list.sort(
+        (a, b) =>
+          (b.lastVisitedAt ?? "").localeCompare(a.lastVisitedAt ?? "") ||
+          (b.visits ?? 0) - (a.visits ?? 0) ||
+          a.name.localeCompare(b.name),
+      );
+    }
+    return list;
+  }, [restaurants, sortMode]);
 
   const addOne = () => {
     const trimmed = name.trim();
@@ -202,8 +223,33 @@ function SettingsPanel({
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 py-4">
+          <div className="mb-3 flex gap-2">
+            <button
+              onClick={() => setSortMode("visits")}
+              aria-pressed={sortMode === "visits"}
+              className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                sortMode === "visits"
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-input bg-background text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Most visited
+            </button>
+            <button
+              onClick={() => setSortMode("lastVisit")}
+              aria-pressed={sortMode === "lastVisit"}
+              className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                sortMode === "lastVisit"
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-input bg-background text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Last visit
+            </button>
+          </div>
+
           <ul className="space-y-2">
-            {restaurants.map((r) => (
+            {sorted.map((r) => (
               <li
                 key={r.id}
                 className="flex items-center justify-between rounded-xl border bg-background px-4 py-3"
@@ -213,6 +259,9 @@ function SettingsPanel({
                   {r.cuisine && (
                     <p className="text-xs text-muted-foreground">{r.cuisine}</p>
                   )}
+                  <p className="text-xs text-muted-foreground">
+                    {formatVisitInfo(r)}
+                  </p>
                 </div>
                 <button
                   onClick={() => removeOne(r.id)}
