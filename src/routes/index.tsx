@@ -130,6 +130,19 @@ function Index() {
   );
 }
 
+function formatVisitInfo(r: Restaurant): string {
+  const count = r.visits ?? 0;
+  if (!r.lastVisitedAt) return "Never visited";
+  const date = new Date(r.lastVisitedAt);
+  const shown = Number.isNaN(date.getTime())
+    ? ""
+    : ` · ${date.toLocaleDateString(undefined, {
+        day: "numeric",
+        month: "short",
+      })}`;
+  return `${count} visit${count === 1 ? "" : "s"}${shown}`;
+}
+
 function SettingsPanel({
   restaurants,
   onChange,
