@@ -151,3 +151,52 @@ function parseCsvRows(text: string): string[][] {
   if (row.some((c) => c.trim() !== "")) rows.push(row);
   return rows;
 }
+
+/** True when the link looks like a Google Maps place/search/share URL. */
+export function isValidGmapsUrl(link: string): boolean {
+  try {
+    const u = new URL(link);
+    if (u.protocol !== "https:" && u.protocol !== "http:") return false;
+    const h = u.hostname.toLowerCase();
+    if (h === "maps.app.goo.gl") return true;
+    if (h === "goo.gl" && u.pathname.startsWith("/maps")) return true;
+    if (/^maps\.google\.[a-z.]+$/.test(h)) return true;
+    if (/^(www\.)?google\.[a-z.]+$/.test(h) && u.pathname.startsWith("/maps")) return true;
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+export type PreviewStatus = "ok" | "duplicate" | "invalid";
+export interface PreviewRow {
+  key: string;
+  url: string;
+  name?: string | undefined;
+  status: PreviewStatus;
+  include: boolean;
+}
+
+/** Validate candidate rows against the existing list and each other. */
+export function buildPreviewRows(
+  candidates: Array<{ url: string; name?: string | undefined }>,
+  existing: Restaurant[],
+): PreviewRow[] {
+  const have = new Set(existing.map((r) => r.id));
+  const seen = new Set<string>();
+  return candidates.map((c, i) => {
+    const url = c.url.trim();
+    let status: PreviewStatus = "ok";
+    if (!isValidGmapsUrl(url)) status = "invalid";
+    else if (have.has(url) || seen.has(url)) status = "duplicate";
+    seen.add(url);
+    return { key: `${i}-${url}`, url, name: c.name, status, include: status === "ok" };
+  });
+}
+
+/** Keyless embeddable Google Maps URL for a restaurant. */
+export function embedUrlFor(r: Restaurant): string {
+  const at = r.googleMapsUrl.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+  const q = at ? `${at[1]},${at[2]}` : displayName(r);
+  return `https://maps.google.com/maps?q=${encodeURIComponent(q)}&z=16&output=embed`;
+}
