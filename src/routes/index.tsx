@@ -44,11 +44,14 @@ function Index() {
     saveRestaurants(next);
   };
 
+  const [recorded, setRecorded] = useState(false);
+
   const spin = () => {
     if (restaurants.length === 0 || spinning) return;
     const randomOne = () =>
       restaurants[Math.floor(Math.random() * restaurants.length)] ?? null;
     setSpinning(true);
+    setRecorded(false);
     setPicked(null);
     let ticks = 0;
     const interval = setInterval(() => {
@@ -56,24 +59,23 @@ function Index() {
       ticks++;
       if (ticks > 14) {
         clearInterval(interval);
-        const finalPick = randomOne();
-        setPicked(finalPick);
+        setPicked(randomOne());
         setSpinning(false);
-        if (finalPick) {
-          const next = restaurants.map((r) =>
-            r.id === finalPick.id
-              ? {
-                  ...r,
-                  visits: (r.visits ?? 0) + 1,
-                  lastVisitedAt: new Date().toISOString(),
-                }
-              : r,
-          );
-          setRestaurants(next);
-          saveRestaurants(next);
-        }
       }
     }, 90);
+  };
+
+  const letsGo = () => {
+    if (!picked || recorded) return;
+    update(
+      restaurants.map((r) =>
+        r.id === picked.id
+          ? { ...r, visits: (r.visits ?? 0) + 1, lastVisitedAt: new Date().toISOString() }
+          : r,
+      ),
+    );
+    setRecorded(true);
+    if (picked.googleMapsUrl) window.open(picked.googleMapsUrl, "_blank", "noopener");
   };
 
   return (
@@ -87,29 +89,43 @@ function Index() {
       </button>
 
       {picked && !spinning ? (
-        <div className="animate-pop-in text-center">
+        <div className="animate-pop-in flex w-full max-w-xl flex-col items-center text-center">
           <p className="mb-3 text-sm font-medium uppercase tracking-widest text-muted-foreground">
             You're going to
           </p>
-          <h1 className="font-display max-w-xl text-5xl font-bold leading-tight text-foreground">
+          <h1 className="font-display text-5xl font-bold leading-tight text-foreground">
             {displayName(picked)}
           </h1>
-          {picked.googleMapsUrl && (
-            <a
-              href={picked.googleMapsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-2 inline-block text-lg text-primary underline"
+          <iframe
+            title={`Map of ${displayName(picked)}`}
+            src={embedUrlFor(picked)}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            className="mt-6 h-64 w-full rounded-2xl border shadow-md"
+          />
+          <div className="mt-8 flex items-center gap-4">
+            <button
+              onClick={reset}
+              aria-label="Back to start"
+              className="flex h-14 w-14 items-center justify-center rounded-full bg-card text-foreground shadow-md"
             >
-              Open in Google Maps
-            </a>
-          )}
-          <button
-            onClick={spin}
-            className="btn-chunky mt-10 rounded-2xl bg-primary px-8 py-4 font-display text-xl font-semibold text-primary-foreground"
-          >
-            Spin again
-          </button>
+              <ReloadIcon />
+            </button>
+            <button
+              onClick={letsGo}
+              disabled={recorded}
+              className="btn-chunky rounded-2xl bg-primary px-8 py-4 font-display text-xl font-semibold text-primary-foreground disabled:opacity-60"
+            >
+              {recorded ? "Enjoy! ✓" : "Let's Go!"}
+            </button>
+            <button
+              onClick={spin}
+              aria-label="Spin again"
+              className="flex h-14 w-14 items-center justify-center rounded-full bg-card text-foreground shadow-md"
+            >
+              <SpinIcon />
+            </button>
+          </div>
         </div>
       ) : (
         <button
@@ -163,6 +179,7 @@ function SettingsPanel({
   const [googleMapsUrl, setGoogleMapsUrl] = useState("");
   const [name, setName] = useState("");
   const [csvMessage, setCsvMessage] = useState<string | null>(null);
+  const [preview, setPreview] = useState<PreviewRow[] | null>(null);
   const [sortMode, setSortMode] = useState<"visits" | "lastVisit">("visits");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -189,21 +206,8 @@ function SettingsPanel({
   const addOne = () => {
     const url = googleMapsUrl.trim();
     if (!url) return;
-    if (restaurants.some((r) => r.id === url)) {
-      setCsvMessage("That Google Maps link is already on your list.");
-      return;
-    }
-    onChange([
-      ...restaurants,
-      {
-        id: url,
-        googleMapsUrl: url,
-        name: name.trim() || undefined,
-      },
-    ]);
-    setGoogleMapsUrl("");
-    setName("");
     setCsvMessage(null);
+    setPreview(buildPreviewRows([{ url, name: name.trim() || undefined }], restaurants));
   };
 
   const removeOne = (id: string) => {
@@ -219,19 +223,21 @@ function SettingsPanel({
       );
       return;
     }
-    const existing = new Set(restaurants.map((r) => r.id));
-    const seen = new Set<string>();
-    const fresh = parsed.filter((r) => {
-      if (existing.has(r.id) || seen.has(r.id)) return false;
-      seen.add(r.id);
-      return true;
-    });
-    const dupes = parsed.length - fresh.length;
-    onChange([...restaurants, ...fresh]);
-    const parts = [`Added ${fresh.length} restaurant${fresh.length === 1 ? "" : "s"}`];
-    if (dupes > 0) parts.push(`skipped ${dupes} duplicate${dupes === 1 ? "" : "s"}`);
-    if (skipped > 0) parts.push(`ignored ${skipped} empty row${skipped === 1 ? "" : "s"}`);
-    setCsvMessage(parts.join(", ") + ".");
+    setCsvMessage(skipped > 0 ? `Ignored ${skipped} empty row${skipped === 1 ? "" : "s"}.` : null);
+    setPreview(
+      buildPreviewRows(
+        parsed.map((r) => ({ url: r.googleMapsUrl, name: r.name })),
+        restaurants,
+      ),
+    );
+  };
+
+  const confirmPreview = (added: Restaurant[]) => {
+    onChange([...restaurants, ...added]);
+    setPreview(null);
+    setGoogleMapsUrl("");
+    setName("");
+    setCsvMessage(`Added ${added.length} restaurant${added.length === 1 ? "" : "s"}.`);
   };
 
   return (
