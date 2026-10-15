@@ -34,7 +34,7 @@ export function saveRestaurants(restaurants: Restaurant[]) {
 
 /**
  * Parse a CSV of restaurants. Accepts an optional header row
- * (name,cuisine) and quoted values. Returns parsed restaurants and
+ * (name,google_maps_url) and quoted values. Returns parsed restaurants and
  * the number of skipped rows.
  */
 export function parseRestaurantsCsv(text: string): {

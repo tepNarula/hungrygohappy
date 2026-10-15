@@ -93,8 +93,15 @@ function Index() {
           <h1 className="font-display max-w-xl text-5xl font-bold leading-tight text-foreground">
             {picked.name}
           </h1>
-          {picked.cuisine && (
-            <p className="mt-2 text-lg text-muted-foreground">{picked.cuisine}</p>
+          {picked.googleMapsUrl && (
+            <a
+              href={picked.googleMapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-block text-lg text-primary underline"
+            >
+              Open in Google Maps
+            </a>
           )}
           <button
             onClick={spin}
@@ -153,7 +160,7 @@ function SettingsPanel({
   onClose: () => void;
 }) {
   const [name, setName] = useState("");
-  const [cuisine, setCuisine] = useState("");
+  const [googleMapsUrl, setGoogleMapsUrl] = useState("");
   const [csvMessage, setCsvMessage] = useState<string | null>(null);
   const [sortMode, setSortMode] = useState<"visits" | "lastVisit">("visits");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -186,11 +193,11 @@ function SettingsPanel({
       {
         id: `manual-${Date.now()}`,
         name: trimmed,
-        cuisine: cuisine.trim() || undefined,
+        googleMapsUrl: googleMapsUrl.trim() || undefined,
       },
     ]);
     setName("");
-    setCuisine("");
+    setGoogleMapsUrl("");
   };
 
   const removeOne = (id: string) => {
@@ -269,8 +276,15 @@ function SettingsPanel({
               >
                 <div>
                   <p className="font-medium">{r.name}</p>
-                  {r.cuisine && (
-                    <p className="text-xs text-muted-foreground">{r.cuisine}</p>
+                  {r.googleMapsUrl && (
+                    <a
+                      href={r.googleMapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-primary underline"
+                    >
+                      Google Maps
+                    </a>
                   )}
                   <p className="text-xs text-muted-foreground">
                     {formatVisitInfo(r)}
@@ -302,10 +316,10 @@ function SettingsPanel({
               className="w-full rounded-lg border border-input bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
             />
             <input
-              value={cuisine}
-              onChange={(e) => setCuisine(e.target.value)}
+              value={googleMapsUrl}
+              onChange={(e) => setGoogleMapsUrl(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && addOne()}
-              placeholder="Cuisine (optional)"
+              placeholder="Google Maps URL (optional)"
               className="w-full rounded-lg border border-input bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
             />
             <button
@@ -320,7 +334,7 @@ function SettingsPanel({
             <h3 className="text-sm font-semibold">Upload CSV</h3>
             <p className="text-xs text-muted-foreground">
               One restaurant per line, or columns{" "}
-              <code className="rounded bg-muted px-1">name,cuisine</code>. A
+              <code className="rounded bg-muted px-1">name,google_maps_url</code>. A
               header row is optional.
             </p>
             <input
