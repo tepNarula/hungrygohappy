@@ -1,6 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { loadRestaurants, saveRestaurants, type Restaurant } from "@/lib/restaurants";
+import {
+  loadRestaurants,
+  saveRestaurants,
+  nameFromGmapsUrl,
+  type Restaurant,
+} from "@/lib/restaurants";
 
 export const Route = createFileRoute("/add")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -19,24 +24,6 @@ export const Route = createFileRoute("/add")({
   component: AddPage,
 });
 
-/** Best-effort restaurant name extraction from a Google Maps URL. */
-function nameFromGmapsLink(link: string): string | null {
-  try {
-    const url = new URL(link);
-    // /maps/place/Some+Name/...
-    const placeMatch = url.pathname.match(/\/place\/([^/]+)/);
-    if (placeMatch?.[1]) {
-      return decodeURIComponent(placeMatch[1]).replace(/\+/g, " ").trim();
-    }
-    // ?q=Some+Name or ?query=...
-    const q = url.searchParams.get("q") ?? url.searchParams.get("query");
-    if (q) return q.replace(/\+/g, " ").trim();
-    return null;
-  } catch {
-    return null;
-  }
-}
-
 function AddPage() {
   const { gmapslink } = Route.useSearch();
   const [status, setStatus] = useState<
@@ -48,19 +35,21 @@ function AddPage() {
       setStatus({ kind: "missing" });
       return;
     }
-    const name = nameFromGmapsLink(gmapslink);
-    if (!name) {
+    try {
+      new URL(gmapslink);
+    } catch {
       setStatus({ kind: "invalid" });
       return;
     }
+    const name = nameFromGmapsUrl(gmapslink) ?? undefined;
     const restaurants = loadRestaurants();
-    if (restaurants.some((r) => r.name.toLowerCase() === name.toLowerCase())) {
+    if (restaurants.some((r) => r.id === gmapslink)) {
       setStatus({ kind: "duplicate", name });
       return;
     }
     const next: Restaurant[] = [
       ...restaurants,
-      { id: `gmaps-${Date.now()}`, name, googleMapsUrl: gmapslink },
+      { id: gmapslink, googleMapsUrl: gmapslink, name },
     ];
     saveRestaurants(next);
     setStatus({ kind: "added", name });
@@ -73,12 +62,16 @@ function AddPage() {
           <p className="mb-3 text-sm font-medium uppercase tracking-widest text-muted-foreground">
             Added to your roulette
           </p>
-          <h1 className="font-display max-w-xl text-4xl font-bold">{status.name}</h1>
+          <h1 className="font-display max-w-xl text-4xl font-bold">
+            {status.name ?? "New restaurant"}
+          </h1>
         </div>
       )}
       {status.kind === "duplicate" && (
         <div>
-          <h1 className="font-display max-w-xl text-4xl font-bold">{status.name}</h1>
+          <h1 className="font-display max-w-xl text-4xl font-bold">
+            {status.name ?? "That restaurant"}
+          </h1>
           <p className="mt-3 text-muted-foreground">is already on your list.</p>
         </div>
       )}
@@ -86,8 +79,8 @@ function AddPage() {
         <div>
           <h1 className="font-display text-4xl font-bold">Hmm, that link didn't work</h1>
           <p className="mt-3 max-w-md text-muted-foreground">
-            I couldn't find a restaurant name in that Google Maps link. Try the
-            full link from the address bar of the place's page.
+            That doesn't look like a valid link. Try the full Google Maps link
+            from the address bar of the place's page.
           </p>
         </div>
       )}
