@@ -60,7 +60,7 @@ function AddPage() {
     }
     const next: Restaurant[] = [
       ...restaurants,
-      { id: `gmaps-${Date.now()}`, name },
+      { id: `gmaps-${Date.now()}`, name, googleMapsUrl: gmapslink },
     ];
     saveRestaurants(next);
     setStatus({ kind: "added", name });
