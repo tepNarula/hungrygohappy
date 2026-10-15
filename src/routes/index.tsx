@@ -7,10 +7,14 @@ import {
   displayName,
   buildPreviewRows,
   embedUrlFor,
+  knownVisitDates,
   type PreviewRow,
   type Restaurant,
 } from "@/lib/restaurants";
 import { ImportPreview } from "@/components/ImportPreview";
+import { RestaurantVisitList } from "@/components/RestaurantVisitList";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, List } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -75,10 +79,11 @@ function Index() {
 
   const letsGo = () => {
     if (!picked || recorded) return;
+    const visitedAt = new Date().toISOString();
     update(
       restaurants.map((r) =>
         r.id === picked.id
-          ? { ...r, visits: (r.visits ?? 0) + 1, lastVisitedAt: new Date().toISOString() }
+          ? { ...r, visits: (r.visits ?? 0) + 1, lastVisitedAt: visitedAt, visitDates: [...knownVisitDates(r), visitedAt] }
           : r,
       ),
     );
@@ -136,13 +141,13 @@ function Index() {
           </div>
         </div>
       ) : (
-        <button
+        <Button
           onClick={spin}
           disabled={restaurants.length === 0}
-          className="btn-chunky rounded-3xl bg-primary px-10 py-8 font-display text-3xl font-semibold leading-snug text-primary-foreground disabled:opacity-50"
+          className="btn-chunky h-auto max-w-full whitespace-normal rounded-3xl bg-primary px-10 py-8 font-display text-3xl font-semibold leading-snug text-primary-foreground disabled:opacity-50"
         >
-          {spinning ? (picked ? displayName(picked) : "…") : "Where to go for lunch today?"}
-        </button>
+          {spinning ? (picked ? displayName(picked) : "…") : "Where To Eat/Drink Today?"}
+        </Button>
       )}
 
       {restaurants.length === 0 && (
@@ -189,6 +194,7 @@ function SettingsPanel({
   const [csvMessage, setCsvMessage] = useState<string | null>(null);
   const [preview, setPreview] = useState<PreviewRow[] | null>(null);
   const [sortMode, setSortMode] = useState<"visits" | "lastVisit">("visits");
+  const [showAll, setShowAll] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const sorted = useMemo(() => {
@@ -255,9 +261,12 @@ function SettingsPanel({
         className="absolute inset-0 bg-foreground/30"
         onClick={onClose}
       />
-      <div className="relative flex h-full w-full max-w-md flex-col bg-card shadow-2xl">
+      <div className={`relative flex h-full w-full flex-col bg-card shadow-2xl ${showAll ? "max-w-3xl" : "max-w-md"}`}>
         <div className="flex items-center justify-between border-b px-6 py-4">
-          <h2 className="font-display text-xl font-semibold">Your restaurants</h2>
+          <div className="flex min-w-0 items-center gap-2">
+            {showAll && <Button variant="ghost" size="icon" aria-label="Back to settings" title="Back to settings" onClick={() => setShowAll(false)}><ArrowLeft /></Button>}
+            <h2 className="font-display text-xl font-semibold">{showAll ? "All restaurants" : "Your restaurants"}</h2>
+          </div>
           <button
             onClick={onClose}
             aria-label="Close"
@@ -268,6 +277,7 @@ function SettingsPanel({
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 py-4">
+          {showAll ? <RestaurantVisitList restaurants={restaurants} /> : <>
           <div className="mb-3 flex gap-2">
             <button
               onClick={() => setSortMode("visits")}
@@ -294,12 +304,12 @@ function SettingsPanel({
           </div>
 
           <ul className="space-y-2">
-            {sorted.map((r) => (
+            {sorted.slice(0, 5).map((r) => (
               <li
                 key={r.id}
                 className="flex items-center justify-between rounded-xl border bg-background px-4 py-3"
               >
-                <div>
+                <div className="min-w-0 flex-1 break-words">
                   <p className="font-medium">{displayName(r)}</p>
                   {r.googleMapsUrl && (
                     <a
@@ -330,6 +340,8 @@ function SettingsPanel({
               </p>
             )}
           </ul>
+
+          <Button variant="outline" className="mt-4 w-full" onClick={() => setShowAll(true)}><List />All restaurants ({restaurants.length})</Button>
 
           {preview && (
             <div className="mt-6">
@@ -394,6 +406,7 @@ function SettingsPanel({
               <p className="text-xs text-muted-foreground">{csvMessage}</p>
             )}
           </div>
+          </>}
         </div>
       </div>
     </div>
