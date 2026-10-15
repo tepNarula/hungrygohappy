@@ -4,8 +4,8 @@ export interface Restaurant {
   googleMapsUrl: string;
   /** Optional display name; auto-derived from the URL when missing. */
   name?: string | undefined;
-  visits?: number;
-  lastVisitedAt?: string;
+  visits?: number | undefined;
+  lastVisitedAt?: string | undefined;
 }
 
 export const DEFAULT_RESTAURANTS: Restaurant[] = [];
