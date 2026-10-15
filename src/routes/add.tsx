@@ -27,7 +27,7 @@ export const Route = createFileRoute("/add")({
 function AddPage() {
   const { gmapslink } = Route.useSearch();
   const [status, setStatus] = useState<
-    { kind: "added" | "duplicate" | "invalid" | "missing"; name?: string }
+    { kind: "added" | "duplicate" | "invalid" | "missing"; name?: string | undefined }
   >({ kind: "missing" });
 
   useEffect(() => {

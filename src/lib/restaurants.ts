@@ -3,7 +3,7 @@ export interface Restaurant {
   id: string;
   googleMapsUrl: string;
   /** Optional display name; auto-derived from the URL when missing. */
-  name?: string;
+  name?: string | undefined;
   visits?: number;
   lastVisitedAt?: string;
 }
