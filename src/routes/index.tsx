@@ -4,6 +4,7 @@ import {
   loadRestaurants,
   saveRestaurants,
   parseRestaurantsCsv,
+  displayName,
   type Restaurant,
 } from "@/lib/restaurants";
 
@@ -91,7 +92,7 @@ function Index() {
             You're going to
           </p>
           <h1 className="font-display max-w-xl text-5xl font-bold leading-tight text-foreground">
-            {picked.name}
+            {displayName(picked)}
           </h1>
           {picked.googleMapsUrl && (
             <a
@@ -116,7 +117,7 @@ function Index() {
           disabled={restaurants.length === 0}
           className="btn-chunky rounded-3xl bg-primary px-10 py-8 font-display text-3xl font-semibold leading-snug text-primary-foreground disabled:opacity-50"
         >
-          {spinning ? (picked?.name ?? "…") : "Where to go for lunch today?"}
+          {spinning ? (picked ? displayName(picked) : "…") : "Where to go for lunch today?"}
         </button>
       )}
 
@@ -159,8 +160,8 @@ function SettingsPanel({
   onChange: (r: Restaurant[]) => void;
   onClose: () => void;
 }) {
-  const [name, setName] = useState("");
   const [googleMapsUrl, setGoogleMapsUrl] = useState("");
+  const [name, setName] = useState("");
   const [csvMessage, setCsvMessage] = useState<string | null>(null);
   const [sortMode, setSortMode] = useState<"visits" | "lastVisit">("visits");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -172,32 +173,37 @@ function SettingsPanel({
         (a, b) =>
           (b.visits ?? 0) - (a.visits ?? 0) ||
           (b.lastVisitedAt ?? "").localeCompare(a.lastVisitedAt ?? "") ||
-          a.name.localeCompare(b.name),
+          displayName(a).localeCompare(displayName(b)),
       );
     } else {
       list.sort(
         (a, b) =>
           (b.lastVisitedAt ?? "").localeCompare(a.lastVisitedAt ?? "") ||
           (b.visits ?? 0) - (a.visits ?? 0) ||
-          a.name.localeCompare(b.name),
+          displayName(a).localeCompare(displayName(b)),
       );
     }
     return list;
   }, [restaurants, sortMode]);
 
   const addOne = () => {
-    const trimmed = name.trim();
-    if (!trimmed) return;
+    const url = googleMapsUrl.trim();
+    if (!url) return;
+    if (restaurants.some((r) => r.id === url)) {
+      setCsvMessage("That Google Maps link is already on your list.");
+      return;
+    }
     onChange([
       ...restaurants,
       {
-        id: `manual-${Date.now()}`,
-        name: trimmed,
-        googleMapsUrl: googleMapsUrl.trim() || undefined,
+        id: url,
+        googleMapsUrl: url,
+        name: name.trim() || undefined,
       },
     ]);
-    setName("");
     setGoogleMapsUrl("");
+    setName("");
+    setCsvMessage(null);
   };
 
   const removeOne = (id: string) => {
@@ -209,12 +215,17 @@ function SettingsPanel({
     const { restaurants: parsed, skipped } = parseRestaurantsCsv(text);
     if (parsed.length === 0) {
       setCsvMessage(
-        "No restaurants found. Use one name per line, or name,google_maps_url columns.",
+        "No restaurants found. Use one Google Maps URL per line, or google_maps_url,name columns.",
       );
       return;
     }
-    const existing = new Set(restaurants.map((r) => r.name.toLowerCase()));
-    const fresh = parsed.filter((r) => !existing.has(r.name.toLowerCase()));
+    const existing = new Set(restaurants.map((r) => r.id));
+    const seen = new Set<string>();
+    const fresh = parsed.filter((r) => {
+      if (existing.has(r.id) || seen.has(r.id)) return false;
+      seen.add(r.id);
+      return true;
+    });
     const dupes = parsed.length - fresh.length;
     onChange([...restaurants, ...fresh]);
     const parts = [`Added ${fresh.length} restaurant${fresh.length === 1 ? "" : "s"}`];
@@ -275,7 +286,7 @@ function SettingsPanel({
                 className="flex items-center justify-between rounded-xl border bg-background px-4 py-3"
               >
                 <div>
-                  <p className="font-medium">{r.name}</p>
+                  <p className="font-medium">{displayName(r)}</p>
                   {r.googleMapsUrl && (
                     <a
                       href={r.googleMapsUrl}
@@ -292,7 +303,7 @@ function SettingsPanel({
                 </div>
                 <button
                   onClick={() => removeOne(r.id)}
-                  aria-label={`Remove ${r.name}`}
+                  aria-label={`Remove ${displayName(r)}`}
                   className="text-muted-foreground hover:text-destructive"
                 >
                   ✕
@@ -309,17 +320,17 @@ function SettingsPanel({
           <div className="mt-6 space-y-3 rounded-2xl border bg-background p-4">
             <h3 className="text-sm font-semibold">Add a restaurant</h3>
             <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && addOne()}
-              placeholder="Name"
-              className="w-full rounded-lg border border-input bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-            />
-            <input
               value={googleMapsUrl}
               onChange={(e) => setGoogleMapsUrl(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && addOne()}
-              placeholder="Google Maps URL (optional)"
+              placeholder="Google Maps URL"
+              className="w-full rounded-lg border border-input bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+            />
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addOne()}
+              placeholder="Name (optional — taken from the link)"
               className="w-full rounded-lg border border-input bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
             />
             <button
@@ -333,9 +344,9 @@ function SettingsPanel({
           <div className="mt-4 space-y-3 rounded-2xl border bg-background p-4">
             <h3 className="text-sm font-semibold">Upload CSV</h3>
             <p className="text-xs text-muted-foreground">
-              One restaurant per line, or columns{" "}
-              <code className="rounded bg-muted px-1">name,google_maps_url</code>. A
-              header row is optional.
+              One Google Maps URL per line, or columns{" "}
+              <code className="rounded bg-muted px-1">google_maps_url,name</code>. A
+              header row is optional; the name column is optional too.
             </p>
             <input
               ref={fileInputRef}
@@ -377,7 +388,7 @@ function GearIcon() {
       strokeLinejoin="round"
     >
       <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.01a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06-.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.01a1.65 1.65 0 0 0 1.82-.33l.06.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
     </svg>
   );
 }
