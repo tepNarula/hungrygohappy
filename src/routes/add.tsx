@@ -3,9 +3,10 @@ import { useEffect, useState } from "react";
 import {
   loadRestaurants,
   saveRestaurants,
-  nameFromGmapsUrl,
-  type Restaurant,
+  buildPreviewRows,
+  type PreviewRow,
 } from "@/lib/restaurants";
+import { ImportPreview } from "@/components/ImportPreview";
 
 export const Route = createFileRoute("/add")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -26,75 +27,40 @@ export const Route = createFileRoute("/add")({
 
 function AddPage() {
   const { gmapslink } = Route.useSearch();
-  const [status, setStatus] = useState<
-    { kind: "added" | "duplicate" | "invalid" | "missing"; name?: string | undefined }
-  >({ kind: "missing" });
+  const [rows, setRows] = useState<PreviewRow[] | null>(null);
+  const [done, setDone] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!gmapslink) {
-      setStatus({ kind: "missing" });
-      return;
-    }
-    try {
-      new URL(gmapslink);
-    } catch {
-      setStatus({ kind: "invalid" });
-      return;
-    }
-    const name = nameFromGmapsUrl(gmapslink) ?? undefined;
-    const restaurants = loadRestaurants();
-    if (restaurants.some((r) => r.id === gmapslink)) {
-      setStatus({ kind: "duplicate", name });
-      return;
-    }
-    const next: Restaurant[] = [
-      ...restaurants,
-      { id: gmapslink, googleMapsUrl: gmapslink, name },
-    ];
-    saveRestaurants(next);
-    setStatus({ kind: "added", name });
+    if (gmapslink) setRows(buildPreviewRows([{ url: gmapslink }], loadRestaurants()));
   }, [gmapslink]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-4 text-center">
-      {status.kind === "added" && (
-        <div className="animate-pop-in">
-          <p className="mb-3 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-            Added to your roulette
-          </p>
-          <h1 className="font-display max-w-xl text-4xl font-bold">
-            {status.name ?? "New restaurant"}
-          </h1>
-        </div>
-      )}
-      {status.kind === "duplicate" && (
-        <div>
-          <h1 className="font-display max-w-xl text-4xl font-bold">
-            {status.name ?? "That restaurant"}
-          </h1>
-          <p className="mt-3 text-muted-foreground">is already on your list.</p>
-        </div>
-      )}
-      {status.kind === "invalid" && (
-        <div>
-          <h1 className="font-display text-4xl font-bold">Hmm, that link didn't work</h1>
-          <p className="mt-3 max-w-md text-muted-foreground">
-            That doesn't look like a valid link. Try the full Google Maps link
-            from the address bar of the place's page.
-          </p>
-        </div>
-      )}
-      {status.kind === "missing" && (
+      {!gmapslink ? (
         <div>
           <h1 className="font-display text-4xl font-bold">No link provided</h1>
           <p className="mt-3 max-w-md text-muted-foreground">
             Add a restaurant like this:{" "}
-            <code className="rounded bg-muted px-2 py-1 text-sm">
-              /add?gmapslink=https://maps.google.com/…
-            </code>
+            <code className="rounded bg-muted px-2 py-1 text-sm">/add?gmapslink=https://maps.google.com/…</code>
           </p>
         </div>
-      )}
+      ) : done !== null ? (
+        <div className="animate-pop-in">
+          <h1 className="font-display max-w-xl text-4xl font-bold">{done}</h1>
+        </div>
+      ) : rows ? (
+        <div className="w-full max-w-md">
+          <ImportPreview
+            rows={rows}
+            onRowsChange={setRows}
+            onCancel={() => setDone("Nothing added.")}
+            onConfirm={(added) => {
+              saveRestaurants([...loadRestaurants(), ...added]);
+              setDone(`Added ${added.map((a) => a.name ?? "restaurant").join(", ")}`);
+            }}
+          />
+        </div>
+      ) : null}
       <Link
         to="/"
         className="btn-chunky mt-10 inline-block rounded-2xl bg-primary px-8 py-4 font-display text-xl font-semibold text-primary-foreground"

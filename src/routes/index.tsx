@@ -5,8 +5,12 @@ import {
   saveRestaurants,
   parseRestaurantsCsv,
   displayName,
+  buildPreviewRows,
+  embedUrlFor,
+  type PreviewRow,
   type Restaurant,
 } from "@/lib/restaurants";
+import { ImportPreview } from "@/components/ImportPreview";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -44,11 +48,18 @@ function Index() {
     saveRestaurants(next);
   };
 
+  const [recorded, setRecorded] = useState(false);
+  const reset = () => {
+    setPicked(null);
+    setRecorded(false);
+  };
+
   const spin = () => {
     if (restaurants.length === 0 || spinning) return;
     const randomOne = () =>
       restaurants[Math.floor(Math.random() * restaurants.length)] ?? null;
     setSpinning(true);
+    setRecorded(false);
     setPicked(null);
     let ticks = 0;
     const interval = setInterval(() => {
@@ -56,24 +67,23 @@ function Index() {
       ticks++;
       if (ticks > 14) {
         clearInterval(interval);
-        const finalPick = randomOne();
-        setPicked(finalPick);
+        setPicked(randomOne());
         setSpinning(false);
-        if (finalPick) {
-          const next = restaurants.map((r) =>
-            r.id === finalPick.id
-              ? {
-                  ...r,
-                  visits: (r.visits ?? 0) + 1,
-                  lastVisitedAt: new Date().toISOString(),
-                }
-              : r,
-          );
-          setRestaurants(next);
-          saveRestaurants(next);
-        }
       }
     }, 90);
+  };
+
+  const letsGo = () => {
+    if (!picked || recorded) return;
+    update(
+      restaurants.map((r) =>
+        r.id === picked.id
+          ? { ...r, visits: (r.visits ?? 0) + 1, lastVisitedAt: new Date().toISOString() }
+          : r,
+      ),
+    );
+    setRecorded(true);
+    if (picked.googleMapsUrl) window.open(picked.googleMapsUrl, "_blank", "noopener");
   };
 
   return (
@@ -87,29 +97,43 @@ function Index() {
       </button>
 
       {picked && !spinning ? (
-        <div className="animate-pop-in text-center">
+        <div className="animate-pop-in flex w-full max-w-xl flex-col items-center text-center">
           <p className="mb-3 text-sm font-medium uppercase tracking-widest text-muted-foreground">
             You're going to
           </p>
-          <h1 className="font-display max-w-xl text-5xl font-bold leading-tight text-foreground">
+          <h1 className="font-display text-5xl font-bold leading-tight text-foreground">
             {displayName(picked)}
           </h1>
-          {picked.googleMapsUrl && (
-            <a
-              href={picked.googleMapsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-2 inline-block text-lg text-primary underline"
+          <iframe
+            title={`Map of ${displayName(picked)}`}
+            src={embedUrlFor(picked)}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            className="mt-6 h-64 w-full rounded-2xl border shadow-md"
+          />
+          <div className="mt-8 flex items-center gap-4">
+            <button
+              onClick={reset}
+              aria-label="Back to start"
+              className="flex h-14 w-14 items-center justify-center rounded-full bg-card text-foreground shadow-md"
             >
-              Open in Google Maps
-            </a>
-          )}
-          <button
-            onClick={spin}
-            className="btn-chunky mt-10 rounded-2xl bg-primary px-8 py-4 font-display text-xl font-semibold text-primary-foreground"
-          >
-            Spin again
-          </button>
+              <ReloadIcon />
+            </button>
+            <button
+              onClick={letsGo}
+              disabled={recorded}
+              className="btn-chunky rounded-2xl bg-primary px-8 py-4 font-display text-xl font-semibold text-primary-foreground disabled:opacity-60"
+            >
+              {recorded ? "Enjoy! ✓" : "Let's Go!"}
+            </button>
+            <button
+              onClick={spin}
+              aria-label="Spin again"
+              className="flex h-14 w-14 items-center justify-center rounded-full bg-card text-foreground shadow-md"
+            >
+              <SpinIcon />
+            </button>
+          </div>
         </div>
       ) : (
         <button
@@ -163,6 +187,7 @@ function SettingsPanel({
   const [googleMapsUrl, setGoogleMapsUrl] = useState("");
   const [name, setName] = useState("");
   const [csvMessage, setCsvMessage] = useState<string | null>(null);
+  const [preview, setPreview] = useState<PreviewRow[] | null>(null);
   const [sortMode, setSortMode] = useState<"visits" | "lastVisit">("visits");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -189,21 +214,8 @@ function SettingsPanel({
   const addOne = () => {
     const url = googleMapsUrl.trim();
     if (!url) return;
-    if (restaurants.some((r) => r.id === url)) {
-      setCsvMessage("That Google Maps link is already on your list.");
-      return;
-    }
-    onChange([
-      ...restaurants,
-      {
-        id: url,
-        googleMapsUrl: url,
-        name: name.trim() || undefined,
-      },
-    ]);
-    setGoogleMapsUrl("");
-    setName("");
     setCsvMessage(null);
+    setPreview(buildPreviewRows([{ url, name: name.trim() || undefined }], restaurants));
   };
 
   const removeOne = (id: string) => {
@@ -219,19 +231,21 @@ function SettingsPanel({
       );
       return;
     }
-    const existing = new Set(restaurants.map((r) => r.id));
-    const seen = new Set<string>();
-    const fresh = parsed.filter((r) => {
-      if (existing.has(r.id) || seen.has(r.id)) return false;
-      seen.add(r.id);
-      return true;
-    });
-    const dupes = parsed.length - fresh.length;
-    onChange([...restaurants, ...fresh]);
-    const parts = [`Added ${fresh.length} restaurant${fresh.length === 1 ? "" : "s"}`];
-    if (dupes > 0) parts.push(`skipped ${dupes} duplicate${dupes === 1 ? "" : "s"}`);
-    if (skipped > 0) parts.push(`ignored ${skipped} empty row${skipped === 1 ? "" : "s"}`);
-    setCsvMessage(parts.join(", ") + ".");
+    setCsvMessage(skipped > 0 ? `Ignored ${skipped} empty row${skipped === 1 ? "" : "s"}.` : null);
+    setPreview(
+      buildPreviewRows(
+        parsed.map((r) => ({ url: r.googleMapsUrl, name: r.name })),
+        restaurants,
+      ),
+    );
+  };
+
+  const confirmPreview = (added: Restaurant[]) => {
+    onChange([...restaurants, ...added]);
+    setPreview(null);
+    setGoogleMapsUrl("");
+    setName("");
+    setCsvMessage(`Added ${added.length} restaurant${added.length === 1 ? "" : "s"}.`);
   };
 
   return (
@@ -317,6 +331,17 @@ function SettingsPanel({
             )}
           </ul>
 
+          {preview && (
+            <div className="mt-6">
+              <ImportPreview
+                rows={preview}
+                onRowsChange={setPreview}
+                onCancel={() => setPreview(null)}
+                onConfirm={confirmPreview}
+              />
+            </div>
+          )}
+
           <div className="mt-6 space-y-3 rounded-2xl border bg-background p-4">
             <h3 className="text-sm font-semibold">Add a restaurant</h3>
             <input
@@ -337,7 +362,7 @@ function SettingsPanel({
               onClick={addOne}
               className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
             >
-              Add
+              Review &amp; add
             </button>
           </div>
 
@@ -389,6 +414,27 @@ function GearIcon() {
     >
       <circle cx="12" cy="12" r="3" />
       <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06-.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.01a1.65 1.65 0 0 0 1.82-.33l.06.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+  );
+}
+
+function SpinIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12a9 9 0 1 1-3-6.7L21 8" />
+      <path d="M21 3v5h-5" />
+      <circle cx="12" cy="12" r="2" />
+    </svg>
+  );
+}
+
+function ReloadIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+      <path d="M21 3v5h-5" />
+      <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+      <path d="M3 21v-5h5" />
     </svg>
   );
 }
