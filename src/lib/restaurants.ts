@@ -1,17 +1,17 @@
 export interface Restaurant {
   id: string;
   name: string;
-  cuisine?: string | undefined;
+  googleMapsUrl?: string | undefined;
   visits?: number;
   lastVisitedAt?: string;
 }
 
 export const DEFAULT_RESTAURANTS: Restaurant[] = [
-  { id: "1", name: "Som Tam Nua", cuisine: "Thai" },
-  { id: "2", name: "Peppina", cuisine: "Italian" },
-  { id: "3", name: "Sushi Hiro", cuisine: "Japanese" },
-  { id: "4", name: "El Toro", cuisine: "Mexican" },
-  { id: "5", name: "Baagadin", cuisine: "Indian" },
+  { id: "1", name: "Som Tam Nua" },
+  { id: "2", name: "Peppina" },
+  { id: "3", name: "Sushi Hiro" },
+  { id: "4", name: "El Toro" },
+  { id: "5", name: "Baagadin" },
 ];
 
 const STORAGE_KEY = "hungry-roulette-restaurants";
@@ -46,7 +46,12 @@ export function parseRestaurantsCsv(text: string): {
 
   let start = 0;
   const first = (rows[0] ?? []).map((c) => c.trim().toLowerCase());
-  if (first[0] === "name" || first.includes("cuisine")) start = 1;
+  if (
+    first[0] === "name" ||
+    first.includes("google_maps_url") ||
+    first.includes("url")
+  )
+    start = 1;
 
   const restaurants: Restaurant[] = [];
   let skipped = 0;
@@ -54,7 +59,7 @@ export function parseRestaurantsCsv(text: string): {
   for (let i = start; i < rows.length; i++) {
     const cols = rows[i] ?? [];
     const name = (cols[0] ?? "").trim();
-    const cuisine = (cols[1] ?? "").trim();
+    const googleMapsUrl = (cols[1] ?? "").trim();
     if (!name) {
       skipped++;
       continue;
@@ -62,7 +67,7 @@ export function parseRestaurantsCsv(text: string): {
     restaurants.push({
       id: `csv-${i}-${name.toLowerCase().replace(/\s+/g, "-")}`,
       name,
-      cuisine: cuisine || undefined,
+      googleMapsUrl: googleMapsUrl || undefined,
     });
   }
 
