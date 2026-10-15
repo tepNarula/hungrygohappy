@@ -209,7 +209,7 @@ function SettingsPanel({
     const { restaurants: parsed, skipped } = parseRestaurantsCsv(text);
     if (parsed.length === 0) {
       setCsvMessage(
-        "No restaurants found. Use one name per line, or name,cuisine columns.",
+        "No restaurants found. Use one name per line, or name,google_maps_url columns.",
       );
       return;
     }
