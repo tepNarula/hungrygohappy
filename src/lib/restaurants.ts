@@ -6,6 +6,8 @@ export interface Restaurant {
   name?: string | undefined;
   visits?: number | undefined;
   lastVisitedAt?: string | undefined;
+  /** Individual visit timestamps for rolling visit counts. */
+  visitDates?: string[] | undefined;
 }
 
 export const DEFAULT_RESTAURANTS: Restaurant[] = [];
@@ -56,6 +58,9 @@ export function loadRestaurants(): Restaurant[] {
         name: typeof r.name === "string" && r.name.trim() ? r.name.trim() : undefined,
         visits: typeof r.visits === "number" ? r.visits : undefined,
         lastVisitedAt: typeof r.lastVisitedAt === "string" ? r.lastVisitedAt : undefined,
+        visitDates: Array.isArray(r.visitDates)
+          ? r.visitDates.filter((date): date is string => typeof date === "string" && Number.isFinite(Date.parse(date)))
+          : undefined,
       });
     }
     return out.length > 0 ? out : DEFAULT_RESTAURANTS;
@@ -66,6 +71,24 @@ export function loadRestaurants(): Restaurant[] {
 
 export function saveRestaurants(restaurants: Restaurant[]) {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(restaurants));
+}
+
+/** Legacy entries retain their one known visit, without inventing older dates. */
+export function knownVisitDates(r: Restaurant): string[] {
+  return r.visitDates ?? (r.lastVisitedAt ? [r.lastVisitedAt] : []);
+}
+
+export function recentVisitCount(r: Restaurant, now = new Date()): number {
+  const cutoff = new Date(now);
+  const day = cutoff.getDate();
+  cutoff.setDate(1);
+  cutoff.setMonth(cutoff.getMonth() - 3);
+  const lastDay = new Date(cutoff.getFullYear(), cutoff.getMonth() + 1, 0).getDate();
+  cutoff.setDate(Math.min(day, lastDay));
+  return knownVisitDates(r).filter((date) => {
+    const time = Date.parse(date);
+    return time >= cutoff.getTime() && time <= now.getTime();
+  }).length;
 }
 
 /**
