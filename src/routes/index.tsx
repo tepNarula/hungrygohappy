@@ -5,8 +5,12 @@ import {
   saveRestaurants,
   parseRestaurantsCsv,
   displayName,
+  buildPreviewRows,
+  embedUrlFor,
+  type PreviewRow,
   type Restaurant,
 } from "@/lib/restaurants";
+import { ImportPreview } from "@/components/ImportPreview";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -45,6 +49,10 @@ function Index() {
   };
 
   const [recorded, setRecorded] = useState(false);
+  const reset = () => {
+    setPicked(null);
+    setRecorded(false);
+  };
 
   const spin = () => {
     if (restaurants.length === 0 || spinning) return;
@@ -323,6 +331,17 @@ function SettingsPanel({
             )}
           </ul>
 
+          {preview && (
+            <div className="mt-6">
+              <ImportPreview
+                rows={preview}
+                onRowsChange={setPreview}
+                onCancel={() => setPreview(null)}
+                onConfirm={confirmPreview}
+              />
+            </div>
+          )}
+
           <div className="mt-6 space-y-3 rounded-2xl border bg-background p-4">
             <h3 className="text-sm font-semibold">Add a restaurant</h3>
             <input
@@ -343,7 +362,7 @@ function SettingsPanel({
               onClick={addOne}
               className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
             >
-              Add
+              Review &amp; add
             </button>
           </div>
 
@@ -395,6 +414,27 @@ function GearIcon() {
     >
       <circle cx="12" cy="12" r="3" />
       <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06-.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.01a1.65 1.65 0 0 0 1.82-.33l.06.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+  );
+}
+
+function SpinIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12a9 9 0 1 1-3-6.7L21 8" />
+      <path d="M21 3v5h-5" />
+      <circle cx="12" cy="12" r="2" />
+    </svg>
+  );
+}
+
+function ReloadIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+      <path d="M21 3v5h-5" />
+      <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+      <path d="M3 21v-5h5" />
     </svg>
   );
 }
