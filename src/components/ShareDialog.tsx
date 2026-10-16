@@ -40,7 +40,11 @@ export function ShareDialog({
     const href = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = href;
-    a.download = `${list}.csv`;
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const yyyymmdd = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}`;
+    const hhmmss = `${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+    a.download = `HappyGoHungry_${list}_${yyyymmdd}_${hhmmss}.txt`;
     document.body.appendChild(a);
     a.click();
     a.remove();
