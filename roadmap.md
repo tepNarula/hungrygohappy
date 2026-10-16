@@ -8,4 +8,6 @@
 - [x] Update spin label and limit gear menu to five restaurants
 - [x] Full sortable restaurant list with map links and three-month visit counts
 - [x] Verify menu, sorting, and visit recording
+- [x] Share dialog + CSV download
+- [x] Group-code lists (/{code}, /{code}/add)
 - [ ] Sync restaurants across devices/users (waiting on sharing choice)
