@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { RoulettePage } from "@/components/RoulettePage";
 
 export const Route = createFileRoute("/")({
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): { view?: string | undefined } => ({
     view: typeof search["view"] === "string" ? search["view"] : undefined,
   }),
   head: () => ({

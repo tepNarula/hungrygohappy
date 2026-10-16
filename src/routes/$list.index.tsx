@@ -3,7 +3,7 @@ import { RoulettePage } from "@/components/RoulettePage";
 import { normalizeListCode } from "@/lib/restaurants";
 
 export const Route = createFileRoute("/$list/")({
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): { view?: string | undefined } => ({
     view: typeof search["view"] === "string" ? search["view"] : undefined,
   }),
   head: () => ({
