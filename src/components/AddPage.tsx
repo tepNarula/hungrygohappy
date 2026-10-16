@@ -44,7 +44,7 @@ export function AddPage({ list, gmapslink }: { list: string; gmapslink: string }
         </div>
       ) : null}
       <Link
-        to={list === "default" ? "/" : "/$list"}
+        to="/$list"
         params={{ list }}
         className="btn-chunky mt-10 inline-block rounded-2xl bg-primary px-8 py-4 font-display text-xl font-semibold text-primary-foreground"
       >
