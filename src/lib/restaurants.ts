@@ -37,9 +37,19 @@ export function displayName(r: Restaurant): string {
   return r.name?.trim() || nameFromGmapsUrl(r.googleMapsUrl) || "Unnamed place";
 }
 
-export function loadRestaurants(): Restaurant[] {
+/** Normalized list (group) code; empty means "default". */
+export function normalizeListCode(code: string | undefined): string {
+  return (code ?? "").trim().toLowerCase() || "default";
+}
+
+function storageKey(list: string | undefined): string {
+  const code = normalizeListCode(list);
+  return code === "default" ? STORAGE_KEY : `${STORAGE_KEY}:${code}`;
+}
+
+export function loadRestaurants(list?: string): Restaurant[] {
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const raw = window.localStorage.getItem(storageKey(list));
     if (!raw) return DEFAULT_RESTAURANTS;
     const parsed = JSON.parse(raw) as Array<Partial<Restaurant> & { name?: string }>;
     if (!Array.isArray(parsed)) return DEFAULT_RESTAURANTS;
@@ -69,8 +79,8 @@ export function loadRestaurants(): Restaurant[] {
   }
 }
 
-export function saveRestaurants(restaurants: Restaurant[]) {
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(restaurants));
+export function saveRestaurants(restaurants: Restaurant[], list?: string) {
+  window.localStorage.setItem(storageKey(list), JSON.stringify(restaurants));
 }
 
 /** Legacy entries retain their one known visit, without inventing older dates. */
@@ -222,4 +232,19 @@ export function embedUrlFor(r: Restaurant): string {
   const at = r.googleMapsUrl.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
   const q = at ? `${at[1]},${at[2]}` : displayName(r);
   return `https://maps.google.com/maps?q=${encodeURIComponent(q)}&z=16&output=embed`;
+}
+
+function csvCell(v: string): string {
+  return /[",\n\r]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+}
+
+/** Export every restaurant attribute as CSV (visit_dates separated by "|"). */
+export function restaurantsToCsv(restaurants: Restaurant[]): string {
+  const header = "google_maps_url,name,visits,last_visited_at,visit_dates";
+  const lines = restaurants.map((r) =>
+    [r.googleMapsUrl, r.name ?? "", String(r.visits ?? 0), r.lastVisitedAt ?? "", (r.visitDates ?? []).join("|")]
+      .map(csvCell)
+      .join(","),
+  );
+  return [header, ...lines].join("\n") + "\n";
 }
