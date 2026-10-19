@@ -174,14 +174,11 @@ function SettingsPanel({
   onChange: (r: Restaurant[]) => void;
   onClose: () => void;
 }) {
-  const [googleMapsUrl, setGoogleMapsUrl] = useState("");
-  const [name, setName] = useState("");
-  const [csvMessage, setCsvMessage] = useState<string | null>(null);
-  const [preview, setPreview] = useState<PreviewRow[] | null>(null);
   const [sortMode, setSortMode] = useState<"visits" | "lastVisit">("visits");
   const [showAll, setShowAll] = useState(initialShowAll);
   const [shareOpen, setShareOpen] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [addOpen, setAddOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
 
   const sorted = useMemo(() => {
     const list = [...restaurants];
@@ -243,6 +240,7 @@ function SettingsPanel({
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <ShareDialog open={shareOpen} onOpenChange={setShareOpen} list={list} restaurants={restaurants} />
+      <AddRestaurantsDialog open={addOpen} onOpenChange={setAddOpen} restaurants={restaurants} onAdd={(added) => onChange([...restaurants, ...added])} />
       <button
         aria-label="Close settings"
         className="absolute inset-0 bg-foreground/30"
@@ -250,9 +248,14 @@ function SettingsPanel({
       />
       <div className={`relative flex h-full w-full flex-col bg-card shadow-2xl ${showAll ? "max-w-3xl" : "max-w-md"}`}>
         <div className="flex items-center justify-between border-b px-6 py-4">
-          <div className="flex min-w-0 items-center gap-2">
-            {showAll && <Button variant="ghost" size="icon" aria-label="Back to settings" title="Back to settings" onClick={() => setShowAll(false)}><ArrowLeft /></Button>}
+          <div className="flex min-w-0 items-center gap-1">
+            {showAll && <Button variant="ghost" size="icon" aria-label="Back to settings" title="Back to settings" onClick={() => { setShowAll(false); setEditing(false); }}><ArrowLeft /></Button>}
             <h2 className="font-display text-xl font-semibold">{showAll ? "All restaurants" : "Your restaurants"}</h2>
+            {showAll ? (
+              <Button variant={editing ? "default" : "ghost"} size="icon" aria-label={editing ? "Done editing" : "Edit restaurants"} title={editing ? "Done editing" : "Edit"} onClick={() => setEditing(!editing)}>{editing ? <Check /> : <Pencil />}</Button>
+            ) : (
+              <Button variant="ghost" size="icon" aria-label="Add places" title="Add places" onClick={() => setAddOpen(true)}><Plus /></Button>
+            )}
             <Button variant="ghost" size="icon" aria-label="Share list" title="Share list" onClick={() => setShareOpen(true)}><Share2 /></Button>
           </div>
           <button
@@ -265,7 +268,7 @@ function SettingsPanel({
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 py-4">
-          {showAll ? <RestaurantVisitList restaurants={restaurants} /> : <>
+          {showAll ? <RestaurantVisitList restaurants={restaurants} editing={editing} onChange={onChange} /> : <>
           <div className="mb-3 flex gap-2">
             <button
               onClick={() => setSortMode("visits")}
@@ -331,69 +334,6 @@ function SettingsPanel({
 
           <Button variant="outline" className="mt-4 w-full" onClick={() => setShowAll(true)}><List />All restaurants ({restaurants.length})</Button>
 
-          {preview && (
-            <div className="mt-6">
-              <ImportPreview
-                rows={preview}
-                onRowsChange={setPreview}
-                onCancel={() => setPreview(null)}
-                onConfirm={confirmPreview}
-              />
-            </div>
-          )}
-
-          <div className="mt-6 space-y-3 rounded-2xl border bg-background p-4">
-            <h3 className="text-sm font-semibold">Add a restaurant</h3>
-            <input
-              value={googleMapsUrl}
-              onChange={(e) => setGoogleMapsUrl(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && addOne()}
-              placeholder="Google Maps URL"
-              className="w-full rounded-lg border border-input bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-            />
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && addOne()}
-              placeholder="Name (optional — taken from the link)"
-              className="w-full rounded-lg border border-input bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-            />
-            <button
-              onClick={addOne}
-              className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
-            >
-              Review &amp; add
-            </button>
-          </div>
-
-          <div className="mt-4 space-y-3 rounded-2xl border bg-background p-4">
-            <h3 className="text-sm font-semibold">Upload CSV</h3>
-            <p className="text-xs text-muted-foreground">
-              One Google Maps URL per line, or columns{" "}
-              <code className="rounded bg-muted px-1">google_maps_url,name</code>. A
-              header row is optional; the name column is optional too.
-            </p>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".csv,text/csv,text/plain"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) void handleCsvFile(file);
-                e.target.value = "";
-              }}
-            />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="w-full rounded-lg border-2 border-dashed border-input px-4 py-3 text-sm font-medium text-muted-foreground hover:border-primary hover:text-foreground"
-            >
-              Choose CSV file…
-            </button>
-            {csvMessage && (
-              <p className="text-xs text-muted-foreground">{csvMessage}</p>
-            )}
-          </div>
           </>}
         </div>
       </div>
