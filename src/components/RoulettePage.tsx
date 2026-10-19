@@ -2,18 +2,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   loadRestaurants,
   saveRestaurants,
-  parseRestaurantsCsv,
   displayName,
-  buildPreviewRows,
   embedUrlFor,
   knownVisitDates,
-  type PreviewRow,
   type Restaurant,
 } from "@/lib/restaurants";
-import { ImportPreview } from "@/components/ImportPreview";
 import { RestaurantVisitList } from "@/components/RestaurantVisitList";
+import { AddRestaurantsDialog } from "@/components/AddRestaurantsDialog";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, List, Share2 } from "lucide-react";
+import { ArrowLeft, Check, List, Pencil, Plus, Share2 } from "lucide-react";
 import { ShareDialog } from "@/components/ShareDialog";
 
 export function RoulettePage({ list, initialView }: { list: string; initialView?: string | undefined }) {
@@ -200,42 +197,10 @@ function SettingsPanel({
     return list;
   }, [restaurants, sortMode]);
 
-  const addOne = () => {
-    const url = googleMapsUrl.trim();
-    if (!url) return;
-    setCsvMessage(null);
-    setPreview(buildPreviewRows([{ url, name: name.trim() || undefined }], restaurants));
-  };
-
   const removeOne = (id: string) => {
     onChange(restaurants.filter((r) => r.id !== id));
   };
 
-  const handleCsvFile = async (file: File) => {
-    const text = await file.text();
-    const { restaurants: parsed, skipped } = parseRestaurantsCsv(text);
-    if (parsed.length === 0) {
-      setCsvMessage(
-        "No restaurants found. Use one Google Maps URL per line, or google_maps_url,name columns.",
-      );
-      return;
-    }
-    setCsvMessage(skipped > 0 ? `Ignored ${skipped} empty row${skipped === 1 ? "" : "s"}.` : null);
-    setPreview(
-      buildPreviewRows(
-        parsed.map((r) => ({ url: r.googleMapsUrl, name: r.name })),
-        restaurants,
-      ),
-    );
-  };
-
-  const confirmPreview = (added: Restaurant[]) => {
-    onChange([...restaurants, ...added]);
-    setPreview(null);
-    setGoogleMapsUrl("");
-    setName("");
-    setCsvMessage(`Added ${added.length} restaurant${added.length === 1 ? "" : "s"}.`);
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
