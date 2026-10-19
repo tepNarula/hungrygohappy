@@ -292,7 +292,7 @@ function SettingsPanel({
             ))}
             {restaurants.length === 0 && (
               <p className="py-6 text-center text-sm text-muted-foreground">
-                No restaurants yet. Add one below or upload a CSV.
+                No restaurants yet. Tap + to add places.
               </p>
             )}
           </ul>
