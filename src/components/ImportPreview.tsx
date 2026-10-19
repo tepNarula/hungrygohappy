@@ -39,10 +39,16 @@ export function ImportPreview({
                 aria-label={`Include ${r.url}`}
               />
               <div className="min-w-0 flex-1">
-                <p className="font-medium">
-                  {r.name || nameFromGmapsUrl(r.url) || "Unnamed place"}
-                </p>
-                <p className="truncate text-xs text-muted-foreground">{r.url || "(empty)"}</p>
+                <input
+                  value={r.name ?? ""}
+                  placeholder={nameFromGmapsUrl(r.url) || "Unnamed place"}
+                  onChange={(e) =>
+                    onRowsChange(rows.map((x) => (x.key === r.key ? { ...x, name: e.target.value } : x)))
+                  }
+                  aria-label="Restaurant name"
+                  className="w-full rounded border border-transparent bg-transparent px-1 py-0.5 font-medium outline-none hover:border-input focus:border-input focus:bg-card"
+                />
+                <p className="truncate px-1 text-xs text-muted-foreground">{r.url || "(empty)"}</p>
               </div>
               <span
                 className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
