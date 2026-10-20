@@ -7,10 +7,10 @@ type Row = {
   name: string | null;
   visits: number;
   last_visited_at: string | null;
-  visit_dates: unknown;
+  visit_dates: string[] | unknown;
 };
 
-function toRow(list: string, r: Restaurant): Row {
+function toRow(list: string, r: Restaurant) {
   return {
     list_code: normalizeListCode(list),
     google_maps_url: r.googleMapsUrl || r.id,
