@@ -7,6 +7,7 @@ import {
   type PreviewRow,
 } from "@/lib/restaurants";
 import { ImportPreview } from "@/components/ImportPreview";
+import { upsertCloud } from "@/lib/cloud-sync";
 
 export function AddPage({ list, gmapslink }: { list: string; gmapslink: string }) {
   const [rows, setRows] = useState<PreviewRow[] | null>(null);
@@ -38,6 +39,7 @@ export function AddPage({ list, gmapslink }: { list: string; gmapslink: string }
             onCancel={() => setDone("Nothing added.")}
             onConfirm={(added) => {
               saveRestaurants([...loadRestaurants(list), ...added], list);
+              upsertCloud(list, added).catch(() => {});
               setDone(`Added ${added.map((a) => a.name ?? "restaurant").join(", ")}`);
             }}
           />

@@ -1,32 +1,30 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { RoulettePage } from "@/components/RoulettePage";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { HomePageFaq } from "@/components/HomePageFaq";
 
 export const Route = createFileRoute("/")({
   validateSearch: (search: Record<string, unknown>): { view?: string | undefined } => ({
     view: typeof search["view"] === "string" ? search["view"] : undefined,
   }),
+  beforeLoad: ({ search }) => {
+    // Old share links (/?view=all) still open the default list.
+    if (search.view) throw redirect({ to: "/$list", params: { list: "default" }, search: { view: search.view } });
+  },
   head: () => ({
     meta: [
-      { title: "Hungry Roulette — Where to go for lunch today?" },
+      { title: "Hungry? Let's Go Happy! — How HungryGoHappy works" },
       {
         name: "description",
         content:
-          "Can't decide where to eat? Spin the hungry roulette and let fate pick your lunch spot.",
+          "Create shared restaurant lists, spin to pick where to eat or drink, edit places, and share or export your list.",
       },
-      { property: "og:title", content: "Hungry Roulette" },
+      { property: "og:title", content: "Hungry? Let's Go Happy!" },
       {
         property: "og:description",
-        content: "Let fate pick your lunch spot.",
+        content: "Shared restaurant roulette lists — how to create, spin, edit and share.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  component: Index,
+  component: HomePageFaq,
 });
-
-
-function Index() {
-  const { view } = Route.useSearch();
-  return <RoulettePage list="default" initialView={view} />;
-}
