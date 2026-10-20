@@ -10,8 +10,8 @@
 - [x] Verify menu, sorting, and visit recording
 - [x] Share dialog + CSV download
 - [x] Group-code lists (/{code}, /{code}/add)
-- [ ] Sync restaurants across devices/users (waiting on sharing choice)
 - [x] + Add dialog (Google Maps link/list + CSV) with inline name editing
 - [x] Edit/delete mode in All restaurants
-- [ ] Cloud sync across devices
+- [x] FAQ homepage ("Hungry? Let's Go Happy!")
+- [x] Cloud sync across devices
 - [ ] Daily auto-refresh of imported Google Maps lists (needs Cloud sync)

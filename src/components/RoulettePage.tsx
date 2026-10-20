@@ -12,6 +12,7 @@ import { AddRestaurantsDialog } from "@/components/AddRestaurantsDialog";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Check, List, Pencil, Plus, Share2 } from "lucide-react";
 import { ShareDialog } from "@/components/ShareDialog";
+import { fetchCloudList, pushDiff, subscribeList, syncWithLocal } from "@/lib/cloud-sync";
 
 export function RoulettePage({ list, initialView }: { list: string; initialView?: string | undefined }) {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
@@ -19,13 +20,40 @@ export function RoulettePage({ list, initialView }: { list: string; initialView?
   const [spinning, setSpinning] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(initialView === "all");
 
+  const latest = useRef<Restaurant[]>([]);
+  latest.current = restaurants;
+
   useEffect(() => {
-    setRestaurants(loadRestaurants(list));
+    let cancelled = false;
+    const local = loadRestaurants(list);
+    setRestaurants(local);
+    const refresh = () =>
+      fetchCloudList(list)
+        .then((cloud) => {
+          if (cancelled) return;
+          setRestaurants(cloud);
+          saveRestaurants(cloud, list);
+        })
+        .catch(() => {});
+    syncWithLocal(list, local)
+      .then((merged) => {
+        if (cancelled) return;
+        setRestaurants(merged);
+        saveRestaurants(merged, list);
+      })
+      .catch(() => {});
+    const unsubscribe = subscribeList(list, refresh);
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
   }, [list]);
 
   const update = (next: Restaurant[]) => {
+    const prev = latest.current;
     setRestaurants(next);
     saveRestaurants(next, list);
+    pushDiff(list, prev, next).catch(() => {});
   };
 
   const [recorded, setRecorded] = useState(false);

@@ -7,6 +7,7 @@ import {
   type PreviewRow,
 } from "@/lib/restaurants";
 import { ImportPreview } from "@/components/ImportPreview";
+import { upsertCloud } from "@/lib/cloud-sync";
 
 export function AddPage({ list, gmapslink }: { list: string; gmapslink: string }) {
   const [rows, setRows] = useState<PreviewRow[] | null>(null);
@@ -23,7 +24,7 @@ export function AddPage({ list, gmapslink }: { list: string; gmapslink: string }
           <h1 className="font-display text-4xl font-bold">No link provided</h1>
           <p className="mt-3 max-w-md text-muted-foreground">
             Add a restaurant like this:{" "}
-            <code className="rounded bg-muted px-2 py-1 text-sm">{list === "default" ? "" : `/${list}`}/add?gmapslink=https://maps.google.com/…</code>
+            <code className="rounded bg-muted px-2 py-1 text-sm">{`/${list}`}/add?gmapslink=https://maps.google.com/…</code>
           </p>
         </div>
       ) : done !== null ? (
@@ -38,6 +39,7 @@ export function AddPage({ list, gmapslink }: { list: string; gmapslink: string }
             onCancel={() => setDone("Nothing added.")}
             onConfirm={(added) => {
               saveRestaurants([...loadRestaurants(list), ...added], list);
+              upsertCloud(list, added).catch(() => {});
               setDone(`Added ${added.map((a) => a.name ?? "restaurant").join(", ")}`);
             }}
           />

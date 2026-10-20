@@ -21,7 +21,7 @@ export function ShareDialog({
 
   useEffect(() => {
     if (!open) return;
-    const path = list === "default" ? "/" : `/${encodeURIComponent(list)}`;
+    const path = `/${encodeURIComponent(list)}`;
     setUrl(`${window.location.origin}${path}?view=all`);
     setCopied(false);
   }, [open, list]);
