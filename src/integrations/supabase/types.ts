@@ -14,7 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      restaurants: {
+        Row: {
+          created_at: string
+          google_maps_url: string
+          id: string
+          last_visited_at: string | null
+          list_code: string
+          name: string | null
+          updated_at: string
+          visit_dates: Json
+          visits: number
+        }
+        Insert: {
+          created_at?: string
+          google_maps_url: string
+          id?: string
+          last_visited_at?: string | null
+          list_code: string
+          name?: string | null
+          updated_at?: string
+          visit_dates?: Json
+          visits?: number
+        }
+        Update: {
+          created_at?: string
+          google_maps_url?: string
+          id?: string
+          last_visited_at?: string | null
+          list_code?: string
+          name?: string | null
+          updated_at?: string
+          visit_dates?: Json
+          visits?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
