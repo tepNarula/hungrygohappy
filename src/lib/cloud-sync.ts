@@ -87,7 +87,7 @@ export function subscribeList(list: string, onChange: () => void) {
     .channel(`restaurants:${code}`)
     .on(
       "postgres_changes",
-      { event: "*", schema: "public", table: "restaurants", filter: `list_code=eq.${code}` },
+      { event: "*", schema: "public", table: "restaurants" },
       onChange,
     )
     .subscribe();
