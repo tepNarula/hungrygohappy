@@ -14,4 +14,5 @@
 - [x] Edit/delete mode in All restaurants
 - [x] FAQ homepage ("Hungry? Let's Go Happy!")
 - [x] Cloud sync across devices
+- [ ] "Copy to another list" in Share dialog: pick existing or new target list, choose at runtime whether to keep visit history or start fresh, skip duplicate links, sync to cloud
 - [ ] Daily auto-refresh of imported Google Maps lists (needs Cloud sync)
