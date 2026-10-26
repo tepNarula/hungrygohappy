@@ -6,7 +6,7 @@ built with [Lovable](https://lovable.dev).
 
 **Live app**: https://hungrygohappy.lovable.app
 
-# Built with Lovable
+#### Built with Lovable
 
 ## Development
 
