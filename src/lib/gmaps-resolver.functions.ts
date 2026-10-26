@@ -1,10 +1,15 @@
 import { createServerFn } from "@tanstack/react-start";
+import { extractListId, fetchGmapsList, politeFetch, RateLimitedError } from "@/lib/gmaps-core";
+import { nameFromGmapsUrl } from "@/lib/restaurants";
 
 export interface ResolvedPlaces {
   listTitle?: string | undefined;
+  listId?: string | undefined;
   places: Array<{ url: string; name?: string | undefined }>;
   error?: string | undefined;
 }
+
+const BUSY = "Google Maps is busy right now. Please wait a minute and try again.";
 
 function isGoogleHost(u: URL) {
   return /(^|\.)google\.[a-z.]+$/.test(u.hostname) || u.hostname === "maps.app.goo.gl" || u.hostname === "goo.gl";
@@ -28,45 +33,26 @@ export const resolveGmapsLink = createServerFn({ method: "POST" })
 
     let finalUrl = data.url;
     try {
-      const res = await fetch(data.url, { redirect: "follow", headers: { "User-Agent": "Mozilla/5.0" } });
+      const res = await politeFetch(data.url, { redirect: "follow" });
       finalUrl = res.url || data.url;
     } catch (e) {
+      if (e instanceof RateLimitedError) return { places: [], error: BUSY };
       console.error("gmaps resolve failed", e);
     }
 
-    const listId =
-      finalUrl.match(/!11m2!2s([A-Za-z0-9_-]+)/)?.[1] ??
-      finalUrl.match(/placelists\/list\/([A-Za-z0-9_-]+)/)?.[1];
-
+    const listId = extractListId(finalUrl);
     if (listId) {
       try {
-        const api = `https://www.google.com/maps/preview/entitylist/getlist?hl=en&pb=!1m4!1s${listId}!2e1!3m1!1e1!2e2!3e2!4i500!16b1`;
-        const res = await fetch(api, { headers: { "User-Agent": "Mozilla/5.0" } });
-        if (!res.ok) throw new Error(`status ${res.status}`);
-        const text = await res.text();
-        const json = JSON.parse(text.replace(/^\)\]\}'\s*/, ""));
-        const items: unknown[] = json?.[0]?.[8] ?? [];
-        const places = items.flatMap((it) => {
-          const item = it as any[];
-          const name: string | undefined = typeof item?.[2] === "string" ? item[2] : undefined;
-          const coords = item?.[1]?.[5];
-          const lat = coords?.[2];
-          const lng = coords?.[3];
-          if (!name) return [];
-          const url =
-            typeof lat === "number" && typeof lng === "number"
-              ? `https://www.google.com/maps/place/${encodeURIComponent(name)}/@${lat},${lng},17z`
-              : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}`;
-          return [{ url, name }];
-        });
-        if (places.length === 0) throw new Error("empty");
-        return { listTitle: typeof json?.[0]?.[4] === "string" ? json[0][4] : undefined, places };
+        const { title, places } = await fetchGmapsList(listId);
+        return { listTitle: title, listId, places };
       } catch (e) {
         console.error("gmaps list fetch failed", e);
+        if (e instanceof RateLimitedError) return { places: [], error: BUSY };
         return { places: [], error: "This list is private or could not be found. Check that link sharing is enabled." };
       }
     }
 
-    const url = /\/maps\/place\//.test(finalUrl) || /[?&]q(uery)?=/.test(finalUrl) ? finalUrl.split("?entry=")[0]! : data.url;
-    return { places: [{ url }] };
+    const isPlace = /\/maps\/place\//.test(finalUrl) || /[?&]q(uery)?=/.test(finalUrl);
+    const url = isPlace ? finalUrl.split("?entry=")[0]! : data.url;
+    return { places: [{ url, name: nameFromGmapsUrl(url) ?? undefined }] };
   });
