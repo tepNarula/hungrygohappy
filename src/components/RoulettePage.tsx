@@ -233,7 +233,7 @@ function SettingsPanel({
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <ShareDialog open={shareOpen} onOpenChange={setShareOpen} list={list} restaurants={restaurants} />
-      <AddRestaurantsDialog open={addOpen} onOpenChange={setAddOpen} restaurants={restaurants} onAdd={(added) => onChange([...restaurants, ...added])} />
+      <AddRestaurantsDialog list={list} open={addOpen} onOpenChange={setAddOpen} restaurants={restaurants} onAdd={(added) => onChange([...restaurants, ...added])} />
       <button
         aria-label="Close settings"
         className="absolute inset-0 bg-foreground/30"

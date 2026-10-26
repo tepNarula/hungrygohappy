@@ -14,3 +14,5 @@
 - Each group-code list is stored in its own browser storage key, and "default" keeps the original key, so existing data carries over with no migration step.
 - Restaurant lists sync through the Cloud `restaurants` table keyed by (list_code, google_maps_url) with open group-code RLS; localStorage stays as an offline cache and local-only rows are uploaded on first load, so legacy device data migrates automatically.
 - `/` is an instructional FAQ page, not a list; lists live only at `/{code}` (old `/?view=…` links redirect to `/default`).
+- Google Maps fetching lives in src/lib/gmaps-core.ts (browser-like headers, 429 retry) and is shared by the resolver server fn and the daily refresh route; browsers can't fetch Google directly due to CORS.
+- Imported Google Maps lists are tracked in `gmaps_list_sources`; the daily job only renames rows whose name is empty or equals `gmaps_name` (last Google name), so user edits are never overwritten.

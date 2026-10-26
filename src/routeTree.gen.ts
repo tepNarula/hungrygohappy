@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AddRouteImport } from './routes/add'
 import { Route as ListIndexRouteImport } from './routes/$list.index'
 import { Route as ListAddRouteImport } from './routes/$list.add'
+import { Route as ApiPublicJobsRefreshGmapsListsRouteImport } from './routes/api/public/jobs/refresh-gmaps-lists'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,18 +35,26 @@ const ListAddRoute = ListAddRouteImport.update({
   path: '/$list/add',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicJobsRefreshGmapsListsRoute =
+  ApiPublicJobsRefreshGmapsListsRouteImport.update({
+    id: '/api/public/jobs/refresh-gmaps-lists',
+    path: '/api/public/jobs/refresh-gmaps-lists',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/add': typeof AddRoute
   '/$list/add': typeof ListAddRoute
   '/$list/': typeof ListIndexRoute
+  '/api/public/jobs/refresh-gmaps-lists': typeof ApiPublicJobsRefreshGmapsListsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/add': typeof AddRoute
   '/$list/add': typeof ListAddRoute
   '/$list': typeof ListIndexRoute
+  '/api/public/jobs/refresh-gmaps-lists': typeof ApiPublicJobsRefreshGmapsListsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +62,30 @@ export interface FileRoutesById {
   '/add': typeof AddRoute
   '/$list/add': typeof ListAddRoute
   '/$list/': typeof ListIndexRoute
+  '/api/public/jobs/refresh-gmaps-lists': typeof ApiPublicJobsRefreshGmapsListsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/add' | '/$list/add' | '/$list/'
+  fullPaths:
+    | '/'
+    | '/add'
+    | '/$list/add'
+    | '/$list/'
+    | '/api/public/jobs/refresh-gmaps-lists'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/add' | '/$list/add' | '/$list'
-  id: '__root__' | '/' | '/add' | '/$list/add' | '/$list/'
+  to:
+    | '/'
+    | '/add'
+    | '/$list/add'
+    | '/$list'
+    | '/api/public/jobs/refresh-gmaps-lists'
+  id:
+    | '__root__'
+    | '/'
+    | '/add'
+    | '/$list/add'
+    | '/$list/'
+    | '/api/public/jobs/refresh-gmaps-lists'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +93,7 @@ export interface RootRouteChildren {
   AddRoute: typeof AddRoute
   ListAddRoute: typeof ListAddRoute
   ListIndexRoute: typeof ListIndexRoute
+  ApiPublicJobsRefreshGmapsListsRoute: typeof ApiPublicJobsRefreshGmapsListsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +126,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ListAddRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/jobs/refresh-gmaps-lists': {
+      id: '/api/public/jobs/refresh-gmaps-lists'
+      path: '/api/public/jobs/refresh-gmaps-lists'
+      fullPath: '/api/public/jobs/refresh-gmaps-lists'
+      preLoaderRoute: typeof ApiPublicJobsRefreshGmapsListsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -107,6 +141,7 @@ const rootRouteChildren: RootRouteChildren = {
   AddRoute: AddRoute,
   ListAddRoute: ListAddRoute,
   ListIndexRoute: ListIndexRoute,
+  ApiPublicJobsRefreshGmapsListsRoute: ApiPublicJobsRefreshGmapsListsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

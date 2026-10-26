@@ -15,4 +15,7 @@
 - [x] FAQ homepage ("Hungry? Let's Go Happy!")
 - [x] Cloud sync across devices
 - [x] "Copy to another list" in Share dialog (existing or new target, keep-history vs start-fresh choice, duplicate skip, cloud sync — verified both modes)
-- [ ] Daily auto-refresh of imported Google Maps lists (needs Cloud sync)
+- [x] Daily auto-refresh of imported Google Maps lists (03:00 Bangkok)
+- [x] Single-place names as "{name} [{plusCode}]"
+- [x] List-sharing tip in Add dialog
+- [x] Resolver browser headers + 429 retry + "busy" message
