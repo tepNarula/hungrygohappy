@@ -14,6 +14,20 @@ export const DEFAULT_RESTAURANTS: Restaurant[] = [];
 
 const STORAGE_KEY = "hungry-roulette-restaurants";
 
+const PLUS_CODE = /\b([23456789CFGHJMPQRVWX]{4,8}\+[23456789CFGHJMPQRVWX]{2,3})\b/i;
+
+/**
+ * Clean a raw Google Maps place label into "{placeName} [{plusCode}]":
+ * drops the trailing ", address, postal…" part and moves a Plus Code into brackets.
+ */
+export function formatPlaceName(raw: string): string {
+  let text = raw.replace(/\s+/g, " ").trim();
+  const code = text.match(PLUS_CODE)?.[1]?.toUpperCase();
+  if (code) text = text.replace(PLUS_CODE, " ").replace(/\s+/g, " ").trim();
+  const name = (text.split(",")[0] ?? "").trim() || text;
+  return code ? (name ? `${name} [${code}]` : `[${code}]`) : name;
+}
+
 /** Best-effort restaurant name extraction from a Google Maps URL. */
 export function nameFromGmapsUrl(link: string): string | null {
   try {
@@ -21,11 +35,11 @@ export function nameFromGmapsUrl(link: string): string | null {
     // /maps/place/Some+Name/...
     const placeMatch = url.pathname.match(/\/place\/([^/]+)/);
     if (placeMatch?.[1]) {
-      return decodeURIComponent(placeMatch[1]).replace(/\+/g, " ").trim();
+      return formatPlaceName(decodeURIComponent(placeMatch[1].replace(/\+/g, " ")));
     }
     // ?q=Some+Name or ?query=...
     const q = url.searchParams.get("q") ?? url.searchParams.get("query");
-    if (q) return q.replace(/\+/g, " ").trim();
+    if (q) return formatPlaceName(q);
     return null;
   } catch {
     return null;
