@@ -62,12 +62,7 @@ export function ImportPreview({
         })}
       </ul>
       <div flex flex-col gap-2>
-        <button
-          onClick={onCancel}
-          className="flex-1 rounded-lg border border-input px-4 py-2 text-sm font-medium"
-        >
-          Cancel
-        </button>
+
         <button
           disabled={chosen.length === 0}
           onClick={() =>
@@ -82,6 +77,12 @@ export function ImportPreview({
           className="flex-1 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
         >
           Add {chosen.length}
+        </button>
+        <button
+          onClick={onCancel}
+          className="flex-1 rounded-lg border border-input px-4 py-2 text-sm font-medium"
+        >
+          Cancel
         </button>
       </div>
     </div>
