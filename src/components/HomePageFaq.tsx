@@ -27,7 +27,7 @@ const FAQS = [
     a: [
       "Open the ⚙ gear, tap “All restaurants”, then the ✏ pencil to enter edit mode.",
       "Change any name, link, last-visit date or visit count — changes save as you leave each field. Tap the bin to delete a place, then ✓ when done.",
-      "Auto-update (coming soon): lists imported from a shared Google Maps list will be re-checked once a day — new places get added and official name changes are picked up, while names you renamed yourself are kept.",
+      "Auto-update: lists imported from a shared Google Maps list will be re-checked once a day — new places get added and official name changes are picked up, while names you renamed yourself are kept.",
     ],
   },
   {
