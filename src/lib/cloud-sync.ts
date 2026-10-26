@@ -95,3 +95,12 @@ export function subscribeList(list: string, onChange: () => void) {
     void supabase.removeChannel(channel);
   };
 }
+
+/** Remember a Google Maps list imported into a group list so the daily refresh can pick up changes. */
+export async function registerListSource(list: string, gmapsListId: string, sourceUrl: string, title?: string) {
+  const { error } = await supabase.from("gmaps_list_sources").upsert(
+    { list_code: normalizeListCode(list), gmaps_list_id: gmapsListId, source_url: sourceUrl, title: title ?? null },
+    { onConflict: "list_code,gmaps_list_id" },
+  );
+  if (error) console.error("register list source failed", error);
+}

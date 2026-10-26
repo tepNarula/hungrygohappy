@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ImportPreview } from "@/components/ImportPreview";
 import { resolveGmapsLink } from "@/lib/gmaps-resolver.functions";
+import { registerListSource } from "@/lib/cloud-sync";
 import { buildPreviewRows, parseRestaurantsCsv, type PreviewRow, type Restaurant } from "@/lib/restaurants";
 
 export function AddRestaurantsDialog({
@@ -12,7 +13,9 @@ export function AddRestaurantsDialog({
   onOpenChange,
   restaurants,
   onAdd,
+  list,
 }: {
+  list: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   restaurants: Restaurant[];
@@ -23,9 +26,10 @@ export function AddRestaurantsDialog({
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [preview, setPreview] = useState<PreviewRow[] | null>(null);
+  const [source, setSource] = useState<{ id: string; url: string; title?: string | undefined } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const reset = () => { setPreview(null); setMessage(null); setLink(""); };
+  const reset = () => { setPreview(null); setSource(null); setMessage(null); setLink(""); };
 
   const fetchLink = async () => {
     const url = link.trim();
@@ -35,6 +39,7 @@ export function AddRestaurantsDialog({
       const res = await resolve({ data: { url } });
       if (res.error || res.places.length === 0) { setMessage(res.error ?? "No places found."); return; }
       if (res.listTitle) setMessage(`Found ${res.places.length} places in “${res.listTitle}”.`);
+      setSource(res.listId ? { id: res.listId, url, title: res.listTitle } : null);
       setPreview(buildPreviewRows(res.places, restaurants));
     } catch {
       setMessage("Couldn't read that link. Please try again.");
@@ -44,7 +49,7 @@ export function AddRestaurantsDialog({
   const handleCsv = async (file: File) => {
     const { restaurants: parsed } = parseRestaurantsCsv(await file.text());
     if (parsed.length === 0) { setMessage("No restaurants found. Use one Google Maps URL per line, or google_maps_url,name columns."); return; }
-    setMessage(null);
+    setMessage(null); setSource(null);
     setPreview(buildPreviewRows(parsed.map((r) => ({ url: r.googleMapsUrl, name: r.name })), restaurants));
   };
 
@@ -59,7 +64,10 @@ export function AddRestaurantsDialog({
               rows={preview}
               onRowsChange={setPreview}
               onCancel={() => setPreview(null)}
-              onConfirm={(added) => { onAdd(added); reset(); onOpenChange(false); }}
+              onConfirm={(added) => {
+                if (source) void registerListSource(list, source.id, source.url, source.title);
+                onAdd(added); reset(); onOpenChange(false);
+              }}
             />
           </div>
         ) : (
@@ -70,6 +78,13 @@ export function AddRestaurantsDialog({
             </TabsList>
             <TabsContent value="link" className="space-y-3 pt-2">
               <p className="text-xs text-muted-foreground">Paste a link to one place or a whole shared list.</p>
+              <div className="rounded-lg border border-primary/30 bg-primary/10 p-3 text-xs leading-relaxed text-foreground">
+                <p className="font-semibold">💡 Importing a whole list?</p>
+                <p className="mt-1">
+                  In Google Maps open <b>Saved</b> → your list, then tap <b>Share</b> at the top of the list (not on a single place).
+                  Make sure link sharing is turned on. Imported lists refresh automatically every day.
+                </p>
+              </div>
               <input
                 value={link}
                 onChange={(e) => setLink(e.target.value)}
