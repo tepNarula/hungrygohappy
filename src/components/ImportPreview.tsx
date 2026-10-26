@@ -61,7 +61,7 @@ export function ImportPreview({
           );
         })}
       </ul>
-      <div className="flex gap-2">
+      <div flex flex-col gap-2>
         <button
           onClick={onCancel}
           className="flex-1 rounded-lg border border-input px-4 py-2 text-sm font-medium"
