@@ -14,36 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      gmaps_list_sources: {
+        Row: {
+          created_at: string
+          gmaps_list_id: string
+          id: string
+          last_synced_at: string | null
+          list_code: string
+          source_url: string
+          title: string | null
+        }
+        Insert: {
+          created_at?: string
+          gmaps_list_id: string
+          id?: string
+          last_synced_at?: string | null
+          list_code: string
+          source_url: string
+          title?: string | null
+        }
+        Update: {
+          created_at?: string
+          gmaps_list_id?: string
+          id?: string
+          last_synced_at?: string | null
+          list_code?: string
+          source_url?: string
+          title?: string | null
+        }
+        Relationships: []
+      }
       restaurants: {
         Row: {
           created_at: string
+          gmaps_name: string | null
           google_maps_url: string
           id: string
           last_visited_at: string | null
           list_code: string
           name: string | null
+          source_list_id: string | null
           updated_at: string
           visit_dates: Json
           visits: number
         }
         Insert: {
           created_at?: string
+          gmaps_name?: string | null
           google_maps_url: string
           id?: string
           last_visited_at?: string | null
           list_code: string
           name?: string | null
+          source_list_id?: string | null
           updated_at?: string
           visit_dates?: Json
           visits?: number
         }
         Update: {
           created_at?: string
+          gmaps_name?: string | null
           google_maps_url?: string
           id?: string
           last_visited_at?: string | null
           list_code?: string
           name?: string | null
+          source_list_id?: string | null
           updated_at?: string
           visit_dates?: Json
           visits?: number
