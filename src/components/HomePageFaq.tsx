@@ -50,7 +50,8 @@ export function HomePageFaq() {
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col px-5 py-12">
       <header className="text-center">
-        <h1 className="font-display text-3xl font-bold leading-tight">Hungry? Let's Go Happy!</h1>
+        <h1 className="font-display text-3xl font-bold leading-tight">Hungry?</h1>
+        <h2>Let's Go Happy!</h2>
         <p className="mt-3 text-muted-foreground">
           Spin a shared list of your favourite spots and let fate pick where to eat or drink.
         </p>
@@ -87,7 +88,9 @@ export function HomePageFaq() {
       <section className="mt-10">
         <h2 className="font-display text-2xl font-bold">Frequently asked questions</h2>
         <div>
-          <p><a href="https://github.com/tepNarula/hungrygohappy">hungrygohappy githup repo</a></p>
+          <p className="mt-3 text-muted-foreground">
+            <a href="https://github.com/tepNarula/hungrygohappy">[hungrygohappy githup repo]</a>
+          </p>
         </div>
         <Accordion type="multiple" className="mt-4 space-y-3">
           {FAQS.map((f, i) => (
