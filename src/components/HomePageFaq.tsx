@@ -83,13 +83,7 @@ export function HomePageFaq() {
             Open
           </button>
         </div>
-        <button
-          type="button"
-          onClick={() => open("default")}
-          className="mt-3 text-sm text-muted-foreground underline underline-offset-4"
-        >
-          or open the “default” list
-        </button>
+        or open the “default” list
       </form>
 
       <section className="mt-10">
