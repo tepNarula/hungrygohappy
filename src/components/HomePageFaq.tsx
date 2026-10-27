@@ -86,6 +86,9 @@ export function HomePageFaq() {
 
       <section className="mt-10">
         <h2 className="font-display text-2xl font-bold">Frequently asked questions</h2>
+        <div>
+          <p><a href="https://github.com/tepNarula/hungrygohappy">hungrygohappy githup repo</a></p>
+        </div>
         <Accordion type="multiple" className="mt-4 space-y-3">
           {FAQS.map((f, i) => (
             <AccordionItem key={f.q} value={`q${i}`} className="rounded-2xl border bg-card px-4">
