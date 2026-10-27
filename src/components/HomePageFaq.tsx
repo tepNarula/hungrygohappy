@@ -83,7 +83,6 @@ export function HomePageFaq() {
             Open
           </button>
         </div>
-        or open the “default” list
       </form>
 
       <section className="mt-10">
