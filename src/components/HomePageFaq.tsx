@@ -88,7 +88,7 @@ export function HomePageFaq() {
       <section className="mt-10">
         <h2 className="font-display text-2xl font-bold">Frequently asked questions</h2>
         <div>
-          <button type="button" className="btn-chunky bg-primary px-5 py-3 font-display font-semibold text-primary-foreground">
+          <button type="button" className="btn-chunky rounded-xl bg-primary px-5 py-3 font-display font-semibold text-primary-foreground">
             <a href="https://github.com/tepNarula/hungrygohappy">git repo</a>
           </button>
         </div>
