@@ -88,9 +88,9 @@ export function HomePageFaq() {
       <section className="mt-10">
         <h2 className="font-display text-2xl font-bold">Frequently asked questions</h2>
         <div>
-          <button type="button" className="btn-chunky rounded-xl bg-primary px-5 py-3 font-display font-semibold text-primary-foreground">
-            <a href="https://github.com/tepNarula/hungrygohappy">git repo</a>
-          </button>
+          <p>
+            <a href="https://github.com/tepNarula/hungrygohappy" target="_blank" rel="noopener noreferrer" class="button-style">git repo</a>
+          </p>
         </div>
         <Accordion type="multiple" className="mt-4 space-y-3">
           {FAQS.map((f, i) => (
