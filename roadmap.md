@@ -24,13 +24,33 @@
 
 ## Pending
 
-- [ ] Top-left header controls: Default to dark theme + Sun/Moon switcher + Desktop/Mobile viewport frame toggle
-- [ ] "Review before adding" dialog polish: Stack "Add {N}" above "Cancel", trim preview URLs to 80 chars for display, and allow multi-line word-wrapping for place names
-- [ ] Dedicated "All Restaurants" full page: Move from drawer in Gear menu to a dedicated full-page route (/{list}/places) with return navigation
-- [ ] Tracked Google Maps lists manager: View synced lists, last sync timestamps, manual refresh (single or all), add new list, and remove tracked lists
-- [ ] Real-time opening schedule & status badges: Check place hours against client local time with 60-min opening/closing soon thresholds
-- [ ] Database schema documentation: Create dedicated SCHEMA.md documenting tables and constraints, linked from README.md
+- [ ] Top-left header controls:
+  - [ ] Default to dark theme on initial visit
+  - [ ] Sun/Moon theme switcher toggle button at top-left of every page
+  - [ ] Desktop/Mobile viewport frame toggle button next to theme switcher
+- [ ] "Review before adding" dialog polish:
+  - [ ] Stack primary "Add {N}" button above "Cancel" button vertically
+  - [ ] Auto-trim preview URLs to 80 characters with trailing ellipses for display only (preserve full URL on import)
+  - [ ] Support multi-line word-wrapping for reviewed place names
+- [ ] Dedicated "All Restaurants" full page:
+  - [ ] Move from slide-out Gear drawer to dedicated full-page route (`/{list}/places`)
+  - [ ] Include back navigation, sorting, and inline editing/deletion
+- [ ] Tracked Google Maps lists manager:
+  - [ ] Add button on Gear menu opening manager dialog/panel
+  - [ ] View all synced lists and their last sync timestamps
+  - [ ] Manual refresh for individual lists or all lists at once
+  - [ ] Add new Google Maps shared list to tracked auto-sync sources
+  - [ ] Remove existing tracked list(s)
+- [ ] Real-time opening schedule & status badges:
+  - [ ] Check place opening hours against client device's local time
+  - [ ] Display status: Currently open (upcoming closing time), Opening soon (within 60m), Closing soon (within 60m), or Currently closed (next opening day & time / temporarily / permanently closed)
+- [ ] Database schema documentation:
+  - [ ] Create dedicated `SCHEMA.md` documenting tables, columns, constraints, and RLS policies
+  - [ ] Reference and link `SCHEMA.md` from `README.md`
 - [ ] Location metadata & spin filtering:
-  - [ ] Extract and store city, province, postal code, and country in the database
-  - [ ] Pre-spin screen: Location filter widget placed below Live Match Counter and Quick Suggestion Chips
-  - [ ] Spin result screen: Show location metadata and place "Back to Roulette" button to the left of "Let's Go!"
+  - [ ] Fetch, extract, and sync city, province, postal code, and country into database
+  - [ ] Pre-spin screen: Location filter input widget positioned below Live Match Counter and Quick Suggestion Chips
+  - [ ] Spin result screen: Display location metadata and place "Back to Roulette" button to the left of "Let's Go!"
+- [ ] Development Roadmap page & Homepage link:
+  - [ ] Add clickable "(Roadmap)" label under "Frequently asked questions" header on the Homepage
+  - [ ] Dedicated `/roadmap` page displaying HTML-rendered view of `roadmap.md` with return navigation
