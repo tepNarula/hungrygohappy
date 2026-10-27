@@ -51,7 +51,7 @@ export function HomePageFaq() {
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col px-5 py-12">
       <header className="text-center">
         <h1 className="font-display text-3xl font-bold leading-tight">Hungry?</h1>
-        <h1>Let's Go Happy!</h1>
+        <h1 className="font-display text-3xl font-bold leading-tight">Let's Go Happy!</h1>
         <p className="mt-3 text-muted-foreground">
           Spin a shared list of your favourite spots and let fate pick where to eat or drink.
         </p>
