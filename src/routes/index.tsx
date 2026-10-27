@@ -11,7 +11,7 @@ export const Route = createFileRoute("/")({
   },
   head: () => ({
     meta: [
-      { title: "Hungry? Let's Go Happy! — How HungryGoHappy works" },
+      { title: "Hungry? Let's Go Happy!" },
       {
         name: "description",
         content:
