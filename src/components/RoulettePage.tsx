@@ -131,7 +131,7 @@ export function RoulettePage({ list, initialView }: { list: string; initialView?
             <button
               onClick={spin}
               aria-label="Spin again"
-              className="flex h-14 w-14 items-center justify-center rounded-full bg-card text-foreground shadow-md"
+              className="flex h-20 w-20 items-center justify-center rounded-full bg-card text-foreground shadow-md"
             >
               <SpinIcon />
             </button>
