@@ -8,9 +8,9 @@ export const Route = createFileRoute("/$list/add")({
   }),
   head: () => ({
     meta: [
-      { title: "Add a restaurant — Hungry Roulette" },
+      { title: "Add a restaurant" },
       { name: "description", content: "Add a restaurant to your lunch roulette from a Google Maps link." },
-      { property: "og:title", content: "Add a restaurant — Hungry Roulette" },
+      { property: "og:title", content: "Add a restaurant" },
       { property: "og:description", content: "Add a restaurant to your lunch roulette from a Google Maps link." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
