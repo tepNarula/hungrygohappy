@@ -24,7 +24,7 @@ export function AddPage({ list, gmapslink }: { list: string; gmapslink: string }
           <h1 className="font-display text-4xl font-bold">No link provided</h1>
           <p className="mt-3 max-w-md text-muted-foreground">
             Add a restaurant like this:{" "}
-            <code className="rounded bg-muted px-2 py-1 text-sm">{`/${list}`}/add?gmapslink=https://maps.google.com/…</code>
+            <code className="rounded bg-muted px-2 py-1 text-sm">/{List-Name}/add?gmapslink=https://maps.google.com/…</code>
           </p>
         </div>
       ) : done !== null ? (
