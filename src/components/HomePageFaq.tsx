@@ -14,12 +14,11 @@ const FAQS = [
     ],
   },
   {
-    q: "How to spin, re-spin, select, and reload?",
+    q: "How to spin, re-spin, and select?",
     a: [
       "Spin: tap the big “Where To Eat/Drink Today?” button.",
       "Re-spin: not feeling it? Tap the spin icon to pick again — nothing is recorded.",
       "Select: tap “Let's Go!” to record the visit and open directions in Google Maps.",
-      "Reload: tap the reload icon to go back to the start screen.",
     ],
   },
   {
