@@ -20,7 +20,7 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "Hungry? Let's Go Happy!" },
       {
         property: "og:description",
-        content: "Shared restaurant roulette lists — how to create, spin, edit and share.",
+        content: "Shared restaurant lists — how to create, spin, edit and share.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
