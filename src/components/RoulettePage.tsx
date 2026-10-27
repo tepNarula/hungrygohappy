@@ -121,13 +121,13 @@ export function RoulettePage({ list, initialView }: { list: string; initialView?
             className="mt-6 h-64 w-full rounded-2xl border shadow-md"
           />
           <div className="mt-8 flex items-center gap-4">
-#            <button
-#              onClick={reset}
-#              aria-label="Back to start"
-#              className="flex h-14 w-14 items-center justify-center rounded-full bg-card text-foreground shadow-md"
-#            >
-#              <ReloadIcon />
-#            </button>
+//            <button
+//              onClick={reset}
+//              aria-label="Back to start"
+//              className="flex h-14 w-14 items-center justify-center rounded-full bg-card text-foreground shadow-md"
+//            >
+//              <ReloadIcon />
+//            </button>
             <button
               onClick={letsGo}
               disabled={recorded}
