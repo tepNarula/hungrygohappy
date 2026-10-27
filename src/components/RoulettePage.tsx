@@ -121,13 +121,13 @@ export function RoulettePage({ list, initialView }: { list: string; initialView?
             className="mt-6 h-64 w-full rounded-2xl border shadow-md"
           />
           <div className="mt-8 flex items-center gap-4">
-//            <button
-//              onClick={reset}
-//              aria-label="Back to start"
-//              className="flex h-14 w-14 items-center justify-center rounded-full bg-card text-foreground shadow-md"
-//            >
-//              <ReloadIcon />
-//            </button>
+//             <button
+//               onClick={reset}
+//               aria-label="Back to start"
+//               className="flex h-14 w-14 items-center justify-center rounded-full bg-card text-foreground shadow-md"
+//             >
+//               <ReloadIcon />
+//             </button>
             <button
               onClick={letsGo}
               disabled={recorded}
@@ -362,14 +362,14 @@ function SpinIcon() {
   );
 }
 
-//function ReloadIcon() {
-//  return (
-//    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-//      <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
-//      <path d="M21 3v5h-5" />
-//      <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
-//      <path d="M3 21v-5h5" />
-//    </svg>
-//  );
+// function ReloadIcon() {
+//   return (
+//     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+//       <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+//       <path d="M21 3v5h-5" />
+//       <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+//       <path d="M3 21v-5h5" />
+//     </svg>
+//   );
 
 }
