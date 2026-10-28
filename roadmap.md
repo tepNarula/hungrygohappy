@@ -24,6 +24,9 @@
 
 ## Pending
 
+- [ ] Bug fixes:
+  - [ ] Shared list duplicate prevention: Deduplicate candidate places in `buildPreviewRows` by both normalized URL and normalized place name (case-insensitive, ignoring Plus Code and whitespace differences) so places already present under different URL formats are flagged as duplicates
+  - [ ] Mobile Google Maps shortlink HTTP 429 fix: Resolve shortlinks using `{ redirect: "manual" }` to read the `Location` header directly from the HTTP 302 response rather than following through to download the heavy Google Maps desktop web app bundle
 - [ ] Top-left header controls:
   - [ ] Default to dark theme on initial visit
   - [ ] Sun/Moon theme switcher toggle button at top-left of every page
@@ -44,13 +47,14 @@
 - [ ] Real-time opening schedule & status badges:
   - [ ] Check place opening hours against client device's local time
   - [ ] Display status: Currently open (upcoming closing time), Opening soon (within 60m), Closing soon (within 60m), or Currently closed (next opening day & time / temporarily / permanently closed)
+  - [ ] Result screen button layout: Place "Back to Roulette" button to the left of "Let's Go!" button
 - [ ] Database schema documentation:
   - [ ] Create dedicated `SCHEMA.md` documenting tables, columns, constraints, and RLS policies
   - [ ] Reference and link `SCHEMA.md` from `README.md`
 - [ ] Location metadata & spin filtering:
   - [ ] Fetch, extract, and sync city, province, postal code, and country into database
   - [ ] Pre-spin screen: Location filter input widget positioned below Live Match Counter and Quick Suggestion Chips
-  - [ ] Spin result screen: Display location metadata and place "Back to Roulette" button to the left of "Let's Go!"
+  - [ ] Spin result screen: Display location metadata
 - [ ] Development Roadmap page & Homepage link:
   - [ ] Add clickable "(Roadmap)" label under "Frequently asked questions" header on the Homepage
   - [ ] Dedicated `/roadmap` page displaying HTML-rendered view of `roadmap.md` with return navigation
