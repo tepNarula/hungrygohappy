@@ -24,8 +24,9 @@
 
 ## Pending
 
-- [ ] Bug fixes:
+- [ ] Bug fixes & Importer enhancements:
   - [ ] Shared list duplicate prevention: Deduplicate candidate places in `buildPreviewRows` by both normalized URL and normalized place name (case-insensitive, ignoring Plus Code and whitespace differences) so places already present under different URL formats are flagged as duplicates
+  - [ ] Shared list source duplication check: Check if a Google Maps shared list (`gmaps_list_id`) is already registered in `gmaps_list_sources` for the current group; alert the user and offer a quick refresh/sync instead of duplicate registration
   - [ ] Mobile Google Maps shortlink HTTP 429 fix: Resolve shortlinks using `{ redirect: "manual" }` to read the `Location` header directly from the HTTP 302 response rather than following through to download the heavy Google Maps desktop web app bundle
 - [ ] Top-left header controls:
   - [ ] Default to dark theme on initial visit
