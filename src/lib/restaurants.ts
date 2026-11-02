@@ -8,6 +8,53 @@ export interface Restaurant {
   lastVisitedAt?: string | undefined;
   /** Individual visit timestamps for rolling visit counts. */
   visitDates?: string[] | undefined;
+  city?: string | undefined;
+  province?: string | undefined;
+  postalCode?: string | undefined;
+  country?: string | undefined;
+  /** Google feature id ("0x…:0x…") used to look up opening hours. */
+  placeId?: string | undefined;
+}
+
+export type PlaceMeta = Pick<Restaurant, "city" | "province" | "postalCode" | "country" | "placeId">;
+
+/**
+ * Best-effort split of a Google formatted address into location fields.
+ * "9/3 Alley, Thung Maha Mek, Sathon, Bangkok 10120" → city Sathon, province Bangkok, postal 10120.
+ */
+export function parseAddress(address: string | undefined | null): PlaceMeta {
+  const parts = (address ?? "").split(",").map((p) => p.trim()).filter(Boolean);
+  if (parts.length === 0) return {};
+  const out: PlaceMeta = {};
+  const POSTAL = /^(.*?)\s*\b(\d{3,6}(?:-\d{4})?)$/;
+  let idx = parts.length - 1;
+  if (!/\d/.test(parts[idx]!) && parts.length >= 3 && POSTAL.test(parts[idx - 1]!)) {
+    out.country = parts[idx];
+    idx--;
+  }
+  const m = parts[idx]!.match(POSTAL);
+  if (m) {
+    if (m[1]) out.province = m[1];
+    out.postalCode = m[2];
+  } else if (parts.length >= 2) {
+    out.province = parts[idx];
+  } else {
+    return out;
+  }
+  const cityPart = parts[idx - 1];
+  if (cityPart && !/^\d/.test(cityPart) && idx - 1 > 0) out.city = cityPart;
+  return out;
+}
+
+/** True when any location field contains the filter text (case-insensitive). */
+export function matchesLocation(r: Restaurant, filter: string): boolean {
+  const q = filter.trim().toLowerCase();
+  if (!q) return true;
+  return [r.city, r.province, r.postalCode, r.country].some((v) => v?.toLowerCase().includes(q));
+}
+
+export function locationLabel(r: Restaurant): string {
+  return [r.city, r.province, r.postalCode, r.country].filter(Boolean).join(", ");
 }
 
 export const DEFAULT_RESTAURANTS: Restaurant[] = [];
@@ -222,23 +269,74 @@ export interface PreviewRow {
   name?: string | undefined;
   status: PreviewStatus;
   include: boolean;
+  meta?: PlaceMeta | undefined;
 }
 
-/** Validate candidate rows against the existing list and each other. */
+/** Comparable form of a Google Maps URL: decoded, lower-cased, tracking params and trailing slash dropped. */
+export function normalizeUrlKey(url: string): string {
+  let u = url.trim();
+  try { u = decodeURIComponent(u.replace(/\+/g, " ")); } catch { /* keep raw */ }
+  return u
+    .toLowerCase()
+    .replace(/^https?:\/\/(www\.)?/, "")
+    .replace(/[?&](entry|g_ep|skid|hl|authuser)=[^&]*/g, "")
+    .replace(/\/+$/, "");
+}
+
+/** Comparable place name: Plus Code, punctuation, case and spacing ignored. */
+export function normalizeNameKey(name: string | undefined | null): string {
+  if (!name) return "";
+  return formatPlaceName(name)
+    .replace(/\[[^\]]*\]/g, "")
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^\p{L}\p{N}]+/gu, "");
+}
+
+export interface DedupeIndex { has(c: { url: string; name?: string | undefined; placeId?: string | undefined }): boolean; add(c: { url: string; name?: string | undefined; placeId?: string | undefined }): void }
+
+export function makeDedupeIndex(existing: Restaurant[] = []): DedupeIndex {
+  const urls = new Set<string>();
+  const names = new Set<string>();
+  const ids = new Set<string>();
+  const index: DedupeIndex = {
+    has: (c) => {
+      if (c.placeId && ids.has(c.placeId)) return true;
+      if (urls.has(normalizeUrlKey(c.url))) return true;
+      const n = normalizeNameKey(c.name || nameFromGmapsUrl(c.url));
+      return n.length > 0 && names.has(n);
+    },
+    add: (c) => {
+      urls.add(normalizeUrlKey(c.url));
+      const n = normalizeNameKey(c.name || nameFromGmapsUrl(c.url));
+      if (n) names.add(n);
+      if (c.placeId) ids.add(c.placeId);
+    },
+  };
+  for (const r of existing) index.add({ url: r.googleMapsUrl || r.id, name: displayName(r), placeId: r.placeId });
+  return index;
+}
+
+/** Validate candidate rows against the existing list and each other (same URL, place id, or place name = duplicate). */
 export function buildPreviewRows(
-  candidates: Array<{ url: string; name?: string | undefined }>,
+  candidates: Array<{ url: string; name?: string | undefined; meta?: PlaceMeta | undefined }>,
   existing: Restaurant[],
 ): PreviewRow[] {
-  const have = new Set(existing.map((r) => r.id));
-  const seen = new Set<string>();
+  const index = makeDedupeIndex(existing);
   return candidates.map((c, i) => {
     const url = c.url.trim();
+    const probe = { url, name: c.name, placeId: c.meta?.placeId };
     let status: PreviewStatus = "ok";
     if (!isValidGmapsUrl(url)) status = "invalid";
-    else if (have.has(url) || seen.has(url)) status = "duplicate";
-    seen.add(url);
-    return { key: `${i}-${url}`, url, name: c.name, status, include: status === "ok" };
+    else if (index.has(probe)) status = "duplicate";
+    if (status !== "invalid") index.add(probe);
+    return { key: `${i}-${url}`, url, name: c.name, status, include: status === "ok", meta: c.meta };
   });
+}
+
+/** Display-only shortening of long URLs. */
+export function truncateForDisplay(text: string, max = 80): string {
+  return text.length > max ? `${text.slice(0, max)}...` : text;
 }
 
 /** Keyless embeddable Google Maps URL for a restaurant. */

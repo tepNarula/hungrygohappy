@@ -15,6 +15,13 @@
       "when": 1792990084120,
       "tag": "0001_gmaps_list_sources",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793610092830,
+      "tag": "0002_location_hours_source_delete",
+      "breakpoints": true
     }
   ]
 }

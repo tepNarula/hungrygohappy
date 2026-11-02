@@ -46,39 +46,54 @@ export type Database = {
       }
       restaurants: {
         Row: {
+          city: string | null
+          country: string | null
           created_at: string
           gmaps_name: string | null
+          gmaps_place_id: string | null
           google_maps_url: string
           id: string
           last_visited_at: string | null
           list_code: string
           name: string | null
+          postal_code: string | null
+          province: string | null
           source_list_id: string | null
           updated_at: string
           visit_dates: Json
           visits: number
         }
         Insert: {
+          city?: string | null
+          country?: string | null
           created_at?: string
           gmaps_name?: string | null
+          gmaps_place_id?: string | null
           google_maps_url: string
           id?: string
           last_visited_at?: string | null
           list_code: string
           name?: string | null
+          postal_code?: string | null
+          province?: string | null
           source_list_id?: string | null
           updated_at?: string
           visit_dates?: Json
           visits?: number
         }
         Update: {
+          city?: string | null
+          country?: string | null
           created_at?: string
           gmaps_name?: string | null
+          gmaps_place_id?: string | null
           google_maps_url?: string
           id?: string
           last_visited_at?: string | null
           list_code?: string
           name?: string | null
+          postal_code?: string | null
+          province?: string | null
           source_list_id?: string | null
           updated_at?: string
           visit_dates?: Json
