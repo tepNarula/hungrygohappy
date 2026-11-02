@@ -40,7 +40,7 @@ const FAQS = [
   {
     q: "Can I get the sourcecode?",
     a: [
-      "Yes! you can checkout <a href='https://github.com/tepNarula/hungrygohappy' target='_blank' rel='noopener noreferrer' class='button-style'>[the full source on github]</a>",
+      "Yes! you can checkout the full source from: https://github.com/tepNarula/hungrygohappy",
     ],
   },
 ];
