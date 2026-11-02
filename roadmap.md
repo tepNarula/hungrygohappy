@@ -21,21 +21,22 @@
 - [x] Single-place names formatted as "{name} [{plusCode}]"
 - [x] List-sharing tip in Add dialog
 - [x] Resolver browser headers + HTTP 429 retry backoff + "Google Maps is busy" message
+- [x] Database foundation for location fields (`city`, `province`, `postal_code`, `country`), place opening hours parser, and tracked list deletion RLS policy
+- [x] Mobile Google Maps shortlink resolver: Manual 302 redirect handling reading `Location` header directly to bypass 429 rate-limiting
 
 ## Pending
 
-- [ ] Bug fixes & Importer enhancements:
-  - [ ] Shared list duplicate prevention: Deduplicate candidate places in `buildPreviewRows` by both normalized URL and normalized place name (case-insensitive, ignoring Plus Code and whitespace differences) so places already present under different URL formats are flagged as duplicates
-  - [ ] Shared list source duplication check: Check if a Google Maps shared list (`gmaps_list_id`) is already registered in `gmaps_list_sources` for the current group; alert the user and offer a quick refresh/sync instead of duplicate registration
-  - [ ] Mobile Google Maps shortlink HTTP 429 fix: Resolve shortlinks using `{ redirect: "manual" }` to read the `Location` header directly from the HTTP 302 response rather than following through to download the heavy Google Maps desktop web app bundle
-- [ ] Top-left header controls:
-  - [ ] Default to dark theme on initial visit
-  - [ ] Sun/Moon theme switcher toggle button at top-left of every page
-  - [ ] Desktop/Mobile viewport frame toggle button next to theme switcher
+- [ ] Importer bug fixes & deduplication UI integration:
+  - [ ] Shared list duplicate prevention: Wire URL and name normalization into `ImportPreview` & `buildPreviewRows` so places under differing URL formats are flagged as duplicates
+  - [ ] Shared list source duplication check: Detect if a Google Maps shared list (`gmaps_list_id`) is already registered in `gmaps_list_sources` for the current group; alert the user and offer a quick refresh/sync instead of duplicate registration
 - [ ] "Review before adding" dialog polish:
   - [ ] Stack primary "Add {N}" button above "Cancel" button vertically
   - [ ] Auto-trim preview URLs to 80 characters with trailing ellipses for display only (preserve full URL on import)
   - [ ] Support multi-line word-wrapping for reviewed place names
+- [ ] Top-left header controls:
+  - [ ] Default to dark theme on initial visit
+  - [ ] Sun/Moon theme switcher toggle button at top-left of every page
+  - [ ] Desktop/Mobile viewport frame toggle button next to theme switcher
 - [ ] Dedicated "All Restaurants" full page:
   - [ ] Move from slide-out Gear drawer to dedicated full-page route (`/{list}/places`)
   - [ ] Include back navigation, sorting, and inline editing/deletion
@@ -47,15 +48,15 @@
   - [ ] Remove existing tracked list(s)
 - [ ] Real-time opening schedule & status badges:
   - [ ] Check place opening hours against client device's local time
-  - [ ] Display status: Currently open (upcoming closing time), Opening soon (within 60m), Closing soon (within 60m), or Currently closed (next opening day & time / temporarily / permanently closed)
+  - [ ] Display status badge: Currently open (upcoming closing time), Opening soon (within 60m), Closing soon (within 60m), or Currently closed (next opening day & time / temporarily / permanently closed)
   - [ ] Result screen button layout: Place "Back to Roulette" button to the left of "Let's Go!" button
+- [ ] Location metadata & spin filtering:
+  - [ ] Fetch, extract, and sync city, province, postal code, and country during import
+  - [ ] Pre-spin screen: Location filter input widget positioned below Live Match Counter and Quick Suggestion Chips
+  - [ ] Spin result screen: Display location metadata under place name
 - [ ] Database schema documentation:
   - [ ] Create dedicated `SCHEMA.md` documenting tables, columns, constraints, and RLS policies
   - [ ] Reference and link `SCHEMA.md` from `README.md`
-- [ ] Location metadata & spin filtering:
-  - [ ] Fetch, extract, and sync city, province, postal code, and country into database
-  - [ ] Pre-spin screen: Location filter input widget positioned below Live Match Counter and Quick Suggestion Chips
-  - [ ] Spin result screen: Display location metadata
-- [ ] Development Roadmap page & Homepage link:
-  - [ ] Add clickable "(Roadmap)" label under "Frequently asked questions" header on the Homepage
+- [ ] Development Roadmap & Published Releases page:
+  - [ ] Add "Development Roadmap & Published Releases" link at the bottom of the Gear menu drawer
   - [ ] Dedicated `/roadmap` page displaying HTML-rendered view of `roadmap.md` with return navigation
