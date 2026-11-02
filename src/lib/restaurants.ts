@@ -8,6 +8,53 @@ export interface Restaurant {
   lastVisitedAt?: string | undefined;
   /** Individual visit timestamps for rolling visit counts. */
   visitDates?: string[] | undefined;
+  city?: string | undefined;
+  province?: string | undefined;
+  postalCode?: string | undefined;
+  country?: string | undefined;
+  /** Google feature id ("0x…:0x…") used to look up opening hours. */
+  placeId?: string | undefined;
+}
+
+export type PlaceMeta = Pick<Restaurant, "city" | "province" | "postalCode" | "country" | "placeId">;
+
+/**
+ * Best-effort split of a Google formatted address into location fields.
+ * "9/3 Alley, Thung Maha Mek, Sathon, Bangkok 10120" → city Sathon, province Bangkok, postal 10120.
+ */
+export function parseAddress(address: string | undefined | null): PlaceMeta {
+  const parts = (address ?? "").split(",").map((p) => p.trim()).filter(Boolean);
+  if (parts.length === 0) return {};
+  const out: PlaceMeta = {};
+  const POSTAL = /^(.*?)\s*\b(\d{3,6}(?:-\d{4})?)$/;
+  let idx = parts.length - 1;
+  if (!/\d/.test(parts[idx]!) && parts.length >= 3 && POSTAL.test(parts[idx - 1]!)) {
+    out.country = parts[idx];
+    idx--;
+  }
+  const m = parts[idx]!.match(POSTAL);
+  if (m) {
+    if (m[1]) out.province = m[1];
+    out.postalCode = m[2];
+  } else if (parts.length >= 2) {
+    out.province = parts[idx];
+  } else {
+    return out;
+  }
+  const cityPart = parts[idx - 1];
+  if (cityPart && !/^\d/.test(cityPart) && idx - 1 > 0) out.city = cityPart;
+  return out;
+}
+
+/** True when any location field contains the filter text (case-insensitive). */
+export function matchesLocation(r: Restaurant, filter: string): boolean {
+  const q = filter.trim().toLowerCase();
+  if (!q) return true;
+  return [r.city, r.province, r.postalCode, r.country].some((v) => v?.toLowerCase().includes(q));
+}
+
+export function locationLabel(r: Restaurant): string {
+  return [r.city, r.province, r.postalCode, r.country].filter(Boolean).join(", ");
 }
 
 export const DEFAULT_RESTAURANTS: Restaurant[] = [];
