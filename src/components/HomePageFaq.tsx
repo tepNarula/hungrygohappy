@@ -40,7 +40,7 @@ const FAQS = [
   {
     q: "Can I get the sourcecode?",
     a: [
-      "Yes! the full source is published on githup at https://github.com/tepNarula/hungrygohappy",
+      "Yes! sourcecode is published to https://github.com/tepNarula/hungrygohappy",
     ],
   },
 ];
