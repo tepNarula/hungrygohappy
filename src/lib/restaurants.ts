@@ -269,23 +269,74 @@ export interface PreviewRow {
   name?: string | undefined;
   status: PreviewStatus;
   include: boolean;
+  meta?: PlaceMeta | undefined;
 }
 
-/** Validate candidate rows against the existing list and each other. */
+/** Comparable form of a Google Maps URL: decoded, lower-cased, tracking params and trailing slash dropped. */
+export function normalizeUrlKey(url: string): string {
+  let u = url.trim();
+  try { u = decodeURIComponent(u.replace(/\+/g, " ")); } catch { /* keep raw */ }
+  return u
+    .toLowerCase()
+    .replace(/^https?:\/\/(www\.)?/, "")
+    .replace(/[?&](entry|g_ep|skid|hl|authuser)=[^&]*/g, "")
+    .replace(/\/+$/, "");
+}
+
+/** Comparable place name: Plus Code, punctuation, case and spacing ignored. */
+export function normalizeNameKey(name: string | undefined | null): string {
+  if (!name) return "";
+  return formatPlaceName(name)
+    .replace(/\[[^\]]*\]/g, "")
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^\p{L}\p{N}]+/gu, "");
+}
+
+export interface DedupeIndex { has(c: { url: string; name?: string | undefined; placeId?: string | undefined }): boolean; add(c: { url: string; name?: string | undefined; placeId?: string | undefined }): void }
+
+export function makeDedupeIndex(existing: Restaurant[] = []): DedupeIndex {
+  const urls = new Set<string>();
+  const names = new Set<string>();
+  const ids = new Set<string>();
+  const index: DedupeIndex = {
+    has: (c) => {
+      if (c.placeId && ids.has(c.placeId)) return true;
+      if (urls.has(normalizeUrlKey(c.url))) return true;
+      const n = normalizeNameKey(c.name || nameFromGmapsUrl(c.url));
+      return n.length > 0 && names.has(n);
+    },
+    add: (c) => {
+      urls.add(normalizeUrlKey(c.url));
+      const n = normalizeNameKey(c.name || nameFromGmapsUrl(c.url));
+      if (n) names.add(n);
+      if (c.placeId) ids.add(c.placeId);
+    },
+  };
+  for (const r of existing) index.add({ url: r.googleMapsUrl || r.id, name: displayName(r), placeId: r.placeId });
+  return index;
+}
+
+/** Validate candidate rows against the existing list and each other (same URL, place id, or place name = duplicate). */
 export function buildPreviewRows(
-  candidates: Array<{ url: string; name?: string | undefined }>,
+  candidates: Array<{ url: string; name?: string | undefined; meta?: PlaceMeta | undefined }>,
   existing: Restaurant[],
 ): PreviewRow[] {
-  const have = new Set(existing.map((r) => r.id));
-  const seen = new Set<string>();
+  const index = makeDedupeIndex(existing);
   return candidates.map((c, i) => {
     const url = c.url.trim();
+    const probe = { url, name: c.name, placeId: c.meta?.placeId };
     let status: PreviewStatus = "ok";
     if (!isValidGmapsUrl(url)) status = "invalid";
-    else if (have.has(url) || seen.has(url)) status = "duplicate";
-    seen.add(url);
-    return { key: `${i}-${url}`, url, name: c.name, status, include: status === "ok" };
+    else if (index.has(probe)) status = "duplicate";
+    if (status !== "invalid") index.add(probe);
+    return { key: `${i}-${url}`, url, name: c.name, status, include: status === "ok", meta: c.meta };
   });
+}
+
+/** Display-only shortening of long URLs. */
+export function truncateForDisplay(text: string, max = 80): string {
+  return text.length > max ? `${text.slice(0, max)}...` : text;
 }
 
 /** Keyless embeddable Google Maps URL for a restaurant. */
