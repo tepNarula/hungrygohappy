@@ -1,15 +1,5 @@
 # Roadmap
 
-## Completed
-
-- [x] Active ImportPreview JSX fix: valid className for flex layout
-
-## Current Build — Implemented, Verification Pending
-
-- CSV export formula neutralization and preview-confirmed name protection implemented; regression tests and scanner confirmation pending.
-- Batch 1 changes implemented: manual shortlink resolution, shared source already-connected notice with Sync now, normalized confirmation/copy/offline/daily-refresh deduplication, and custom-name-safe sync planning.
-- TypeScript optional-field errors corrected after credit exhaustion; final compilation and live importer verification pending. Do not treat Batch 1 as verified complete.
-
 ## Completed Features
 
 - [x] Rebuild Hungry Roulette (cream bg, chunky orange button, settings gear)
@@ -33,21 +23,28 @@
 - [x] Resolver browser headers + HTTP 429 retry backoff + "Google Maps is busy" message
 - [x] Database foundation for location fields (`city`, `province`, `postal_code`, `country`), place opening hours parser, and tracked list deletion RLS policy
 - [x] Mobile Google Maps shortlink resolver: Manual 302 redirect handling reading `Location` header directly to bypass 429 rate-limiting
+- [x] Active ImportPreview JSX fix: valid className for flex layout
+- [x] CSV export formula neutralization (`safeSpreadsheetText` prepending `'` on export and preview confirmation)
+- [x] Importer reliability & deduplication (Batch 1 — verified live in browser):
+  - [x] Mobile Google Maps shortlink manual 302 redirection (verified live: resolved 115 places without rate limits)
+  - [x] Shared-list source duplicate prevention (verified live: detects already-tracked list and offers "Sync now")
+  - [x] Cross-format place deduplication by normalized URL and name (verified live: flags duplicate places, deselects, updates button count)
+  - [x] Custom-name-safe sync planner (`planGmapsSync` protecting user-renamed places)
+  - [x] Display-only URL truncation to 80 characters with trailing ellipses in preview
+- [x] Dev-logs prebuild conversation log: Created `dev-logs/20261103-112700_ICT_prebuild_chatlog.md` with executive summary and complete chat history
+
+---
 
 ## Pending Security Issues Found by Lovable Scanner
 
 - [ ] [Critical] Anyone can delete any record in `gmaps_list_sources` (`RLS_EXPOSURE`). Unresolved: user explicitly chose to keep group-link deletion on 2026-11-03.
 - [ ] [Warning] Anyone can delete any record in `restaurants` (`RLS_EXPOSURE`). Unresolved: user explicitly chose to keep group-link deletion on 2026-11-03.
 
-- [ ] [Warning] Prevent CSV formula injection in shared-list downloads (`INPUT_VALIDATION`):
-  - [ ] Neutralize leading spreadsheet formula trigger characters (`=`, `+`, `-`, `@`, `\t`, `\r`) in `restaurantsToCsv` (prepend with a single quote `'`) so exported CSV files cannot execute arbitrary formulas in spreadsheet applications
-  - [ ] Sanitize imported place names upon CSV upload / preview confirmation
+---
 
 ## Pending Features & Enhancements
 
-- [ ] Importer bug fixes & deduplication UI integration:
-  - [ ] Shared list duplicate prevention: Wire URL and name normalization into `ImportPreview` & `buildPreviewRows` so places under differing URL formats are flagged as duplicates
-  - [ ] Shared list source duplication check: Detect if a Google Maps shared list (`gmaps_list_id`) is already registered in `gmaps_list_sources` for the current group; alert the user and offer a quick refresh/sync instead of duplicate registration
+### Batch 2: Live Google Features, Opening Schedules & Roulette Filtering
 - [ ] Tracked Google Maps lists manager:
   - [ ] Add button on Gear menu opening manager dialog/panel
   - [ ] View all synced lists and their last sync timestamps
@@ -62,9 +59,10 @@
   - [ ] Fetch, extract, and sync city, province, postal code, and country during import
   - [ ] Pre-spin screen: Location filter input widget positioned below Live Match Counter and Quick Suggestion Chips
   - [ ] Spin result screen: Display location metadata under place name
+
+### Batch 3: UI Shell, Dialog Polish, Header Controls & Documentation
 - [ ] "Review before adding" dialog polish:
   - [ ] Stack primary "Add {N}" button above "Cancel" button vertically
-  - [ ] Auto-trim preview URLs to 80 characters with trailing ellipses for display only (preserve full URL on import)
   - [ ] Support multi-line word-wrapping for reviewed place names
 - [ ] Top-left header controls:
   - [ ] Default to dark theme on initial visit
@@ -73,11 +71,13 @@
 - [ ] Dedicated "All Restaurants" full page:
   - [ ] Move from slide-out Gear drawer to dedicated full-page route (`/{list}/places`)
   - [ ] Include back navigation, sorting, and inline editing/deletion
+- [ ] Homepage FAQ improvements:
+  - [ ] Make source code URL in "Can I get the sourcecode?" answer a clickable link opening in a new tab
+- [ ] Prebuild chatlog records:
+  - [ ] Reconstruct historical prebuild chatlogs for earlier builds in `/dev-logs`
 - [ ] Database schema documentation:
   - [ ] Create dedicated `SCHEMA.md` documenting tables, columns, constraints, and RLS policies
   - [ ] Reference and link `SCHEMA.md` from `README.md`
 - [ ] Development Roadmap & Published Releases page:
   - [ ] Add "Development Roadmap & Published Releases" link at the bottom of the Gear menu drawer
   - [ ] Dedicated `/roadmap` page displaying HTML-rendered view of `roadmap.md` with return navigation
-- [ ] Homepage FAQ: make the source-code URL clickable, opening a new browser tab (Batch 3).
-- [ ] Reconstruct historical prebuild chatlogs for previous builds (Batch 3); current build record created, historical records still pending.
