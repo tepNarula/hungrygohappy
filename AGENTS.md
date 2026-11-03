@@ -16,3 +16,7 @@
 - `/` is an instructional FAQ page, not a list; lists live only at `/{code}` (old `/?view=…` links redirect to `/default`).
 - Google Maps fetching lives in src/lib/gmaps-core.ts (browser-like headers, 429 retry) and is shared by the resolver server fn and the daily refresh route; browsers can't fetch Google directly due to CORS.
 - Imported Google Maps lists are tracked in `gmaps_list_sources`; the daily job only renames rows whose name is empty or equals `gmaps_name` (last Google name), so user edits are never overwritten.
+- All add, copy, offline migration, and scheduled refresh paths use shared normalized URL/name/place-ID matching; confirmation rechecks current cloud rows to avoid stale-preview duplicates.
+- Manual tracked-source sync uses the normal group-code RLS client and the shared sync planner; scheduled sync uses the same planner after cron authentication, preserving unknown/custom name baselines.
+- Spreadsheet formula neutralization applies to every exported cell and preview-confirmed name; export remains the security boundary for legacy or directly edited data.
+- Keep one ICT-timestamped prebuild conversation record per build in dev-logs; reconstructed historical records must be labeled, never presented as verbatim transcripts.

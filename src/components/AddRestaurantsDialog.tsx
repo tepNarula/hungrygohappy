@@ -5,8 +5,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ImportPreview } from "@/components/ImportPreview";
 import { resolveGmapsLink } from "@/lib/gmaps-resolver.functions";
-import { registerListSource } from "@/lib/cloud-sync";
-import { buildPreviewRows, parseRestaurantsCsv, type PreviewRow, type Restaurant } from "@/lib/restaurants";
+import { fetchCloudList, getTrackedSource, registerListSource, syncResolvedSource, upsertCloud } from "@/lib/cloud-sync";
+import { buildPreviewRows, parseRestaurantsCsv, preparePreviewImport, uniqueRestaurants, type PreviewRow, type Restaurant } from "@/lib/restaurants";
 
 export function AddRestaurantsDialog({
   open,
@@ -27,9 +27,11 @@ export function AddRestaurantsDialog({
   const [message, setMessage] = useState<string | null>(null);
   const [preview, setPreview] = useState<PreviewRow[] | null>(null);
   const [source, setSource] = useState<{ id: string; url: string; title?: string | undefined } | null>(null);
+  const [connected, setConnected] = useState(false);
+  const [resolvedRows, setResolvedRows] = useState<PreviewRow[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const reset = () => { setPreview(null); setSource(null); setMessage(null); setLink(""); };
+  const reset = () => { setPreview(null); setSource(null); setMessage(null); setLink(""); setConnected(false); setResolvedRows([]); };
 
   const fetchLink = async () => {
     const url = link.trim();
@@ -38,12 +40,47 @@ export function AddRestaurantsDialog({
     try {
       const res = await resolve({ data: { url } });
       if (res.error || res.places.length === 0) { setMessage(res.error ?? "No places found."); return; }
-      if (res.listTitle) setMessage(`Found ${res.places.length} places in “${res.listTitle}”.`);
+      const cloud = await fetchCloudList(list);
+      const existing = [...cloud, ...uniqueRestaurants(restaurants, cloud)];
+      const rows = buildPreviewRows(res.places, existing);
+      setResolvedRows(buildPreviewRows(res.places, []));
       setSource(res.listId ? { id: res.listId, url, title: res.listTitle } : null);
-      setPreview(buildPreviewRows(res.places, restaurants));
+      if (res.listId && await getTrackedSource(list, res.listId)) {
+        setConnected(true);
+        setMessage("This Google Maps list is already connected and refreshes daily.");
+        return;
+      }
+      if (res.listTitle) setMessage(`Found ${res.places.length} places in “${res.listTitle}”.`);
+      setPreview(rows);
     } catch {
       setMessage("Couldn't read that link. Please try again.");
     } finally { setBusy(false); }
+  };
+
+  const syncNow = async () => {
+    if (!source) return;
+    setBusy(true);
+    try {
+      const result = await syncResolvedSource(list, source.id, preparePreviewImport(resolvedRows));
+      onAdd(uniqueRestaurants(result.restaurants, restaurants));
+      setMessage(`Synced. ${result.added} new places added.`);
+      setConnected(false);
+      setSource(null);
+    } catch { setMessage("Couldn't sync this list. Please try again."); }
+    finally { setBusy(false); }
+  };
+
+  const confirm = async (added: Restaurant[]) => {
+    setBusy(true);
+    try {
+      const cloud = await fetchCloudList(list);
+      const fresh = uniqueRestaurants(added, [...cloud, ...restaurants]);
+      const enriched = fresh.map((r) => ({ ...r, ...(source ? { sourceListId: source.id, gmapsName: resolvedRows.find((x) => x.url === r.googleMapsUrl)?.name } : {}) }));
+      await upsertCloud(list, enriched);
+      if (source) await registerListSource(list, source.id, source.url, source.title);
+      onAdd(enriched); reset(); onOpenChange(false);
+    } catch { setMessage("Couldn't save these places. Please try again."); }
+    finally { setBusy(false); }
   };
 
   const handleCsv = async (file: File) => {
@@ -57,17 +94,21 @@ export function AddRestaurantsDialog({
     <Dialog open={open} onOpenChange={(o) => { if (!o) reset(); onOpenChange(o); }}>
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader><DialogTitle>Add places</DialogTitle></DialogHeader>
-        {preview ? (
+        {connected ? (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">{message}</p>
+            <Button className="w-full" disabled={busy} onClick={() => void syncNow()}>{busy ? "Syncing…" : "Sync now"}</Button>
+            <Button variant="outline" className="w-full" disabled={busy} onClick={reset}>Back</Button>
+          </div>
+        ) : preview ? (
           <div className="space-y-2">
             {message && <p className="text-xs text-muted-foreground">{message}</p>}
             <ImportPreview
               rows={preview}
               onRowsChange={setPreview}
               onCancel={() => setPreview(null)}
-              onConfirm={(added) => {
-                if (source) void registerListSource(list, source.id, source.url, source.title);
-                onAdd(added); reset(); onOpenChange(false);
-              }}
+              busy={busy}
+              onConfirm={(added) => void confirm(added)}
             />
           </div>
         ) : (
