@@ -3,7 +3,16 @@ import { useNavigate } from "@tanstack/react-router";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { normalizeListCode } from "@/lib/restaurants";
 
-const FAQS = [
+/**
++ * Structure representing an educational FAQ question and its multi-line answers.
++ * The answers support `React.ReactNode` to allow clickable hyperlinks and formatted text.
++ */
+interface FaqItem {
+  q: string;
+  a: React.ReactNode[];
+}
+
+const FAQS: FaqItem[] = [
   {
     q: "How to create a new restaurants list and add new restaurants?",
     a: [
@@ -40,7 +49,15 @@ const FAQS = [
   {
     q: "Can I get the sourcecode?",
     a: [
-      "Yes! sourcecode is published to https://github.com/tepNarula/hungrygohappy",
+      <span>
+        Yes! sourcecode is published to{" "}
+        <a href="https://github.com/tepNarula/hungrygohappy"
+          target="_blank" rel="noopener noreferrer"
+          className="text-primary font-medium underline underline-offset-4 hover:opacity-80"
+        >
+          github
+        </a>
+      </span>,
     ],
   },
 ];
