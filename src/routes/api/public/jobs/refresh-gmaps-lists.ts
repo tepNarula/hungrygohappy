@@ -31,7 +31,7 @@ export const Route = createFileRoute("/api/public/jobs/refresh-gmaps-lists")({
               id: r.google_maps_url, googleMapsUrl: r.google_maps_url, name: r.name ?? undefined,
               gmapsName: r.gmaps_name ?? undefined, placeId: r.gmaps_place_id ?? undefined,
             })), places.map((p) => ({ id: p.url, googleMapsUrl: p.url, name: p.name, placeId: p.placeId })), src.gmaps_list_id);
-            const inserts = plan.added.map((p) => ({ list_code: src.list_code, google_maps_url: p.googleMapsUrl, name: p.name, gmaps_name: p.gmapsName, source_list_id: src.gmaps_list_id, gmaps_place_id: p.placeId }));
+            const inserts = plan.added.map((p) => ({ list_code: src.list_code, google_maps_url: p.googleMapsUrl, name: p.name, gmaps_name: p.gmapsName, source_list_id: src.gmaps_list_id, gmaps_place_id: p.placeId ?? null }));
             if (inserts.length) {
               const { error } = await supabaseAdmin.from("restaurants").upsert(inserts, { onConflict: "list_code,google_maps_url", ignoreDuplicates: true });
               if (error) throw error;
@@ -41,7 +41,7 @@ export const Route = createFileRoute("/api/public/jobs/refresh-gmaps-lists")({
             for (const p of plan.updates) {
               const row = existing?.find((r) => r.google_maps_url === p.googleMapsUrl);
               if (!row) continue;
-              let query = supabaseAdmin.from("restaurants").update({ name: p.name ?? null, gmaps_name: p.gmapsName, source_list_id: src.gmaps_list_id, gmaps_place_id: p.placeId }).eq("id", row.id);
+              let query = supabaseAdmin.from("restaurants").update({ name: p.name ?? null, gmaps_name: p.gmapsName ?? null, source_list_id: src.gmaps_list_id, gmaps_place_id: p.placeId ?? null }).eq("id", row.id);
               query = row.name == null ? query.is("name", null) : query.eq("name", row.name);
               const { error } = await query;
               if (error) throw error;

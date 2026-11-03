@@ -131,7 +131,7 @@ export async function syncResolvedSource(list: string, sourceId: string, candida
   for (const r of updates) {
     const before = existing.find((x) => x.id === r.id);
     if (!before) continue;
-    let query = supabase.from("restaurants").update({ name: r.name ?? null, gmaps_name: r.gmapsName, source_list_id: sourceId, gmaps_place_id: r.placeId })
+    let query = supabase.from("restaurants").update({ name: r.name ?? null, gmaps_name: r.gmapsName ?? null, source_list_id: sourceId, gmaps_place_id: r.placeId ?? null })
       .eq("list_code", normalizeListCode(list)).eq("google_maps_url", r.googleMapsUrl);
     query = before.name == null ? query.is("name", null) : query.eq("name", before.name);
     const { error } = await query;

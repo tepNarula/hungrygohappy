@@ -19,7 +19,7 @@ export function AddPage({ list, gmapslink }: { list: string; gmapslink: string }
   const [done, setDone] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [source, setSource] = useState<{ id: string; title?: string } | null>(null);
+  const [source, setSource] = useState<{ id: string; title?: string | undefined } | null>(null);
   const [connected, setConnected] = useState(false);
   const [candidates, setCandidates] = useState<PreviewRow[]>([]);
   const resolve = useServerFn(resolveGmapsLink);

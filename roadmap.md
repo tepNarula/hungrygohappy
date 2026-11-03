@@ -2,6 +2,16 @@
 
 ## Completed
 
+- [x] Active ImportPreview JSX fix: valid className for flex layout
+
+## Current Build — Implemented, Verification Pending
+
+- CSV export formula neutralization and preview-confirmed name protection implemented; regression tests and scanner confirmation pending.
+- Batch 1 changes implemented: manual shortlink resolution, shared source already-connected notice with Sync now, normalized confirmation/copy/offline/daily-refresh deduplication, and custom-name-safe sync planning.
+- TypeScript optional-field errors corrected after credit exhaustion; final compilation and live importer verification pending. Do not treat Batch 1 as verified complete.
+
+## Completed Features
+
 - [x] Rebuild Hungry Roulette (cream bg, chunky orange button, settings gear)
 - [x] CSV upload for adding restaurants (verified: 3-row CSV imported, dedupe works)
 - [x] /add?gmapslink=... route to add a restaurant via URL parameter (verified: name extracted, duplicate detected)
@@ -25,6 +35,9 @@
 - [x] Mobile Google Maps shortlink resolver: Manual 302 redirect handling reading `Location` header directly to bypass 429 rate-limiting
 
 ## Pending Security Issues Found by Lovable Scanner
+
+- [ ] [Critical] Anyone can delete any record in `gmaps_list_sources` (`RLS_EXPOSURE`). Unresolved: user explicitly chose to keep group-link deletion on 2026-11-03.
+- [ ] [Warning] Anyone can delete any record in `restaurants` (`RLS_EXPOSURE`). Unresolved: user explicitly chose to keep group-link deletion on 2026-11-03.
 
 - [ ] [Warning] Prevent CSV formula injection in shared-list downloads (`INPUT_VALIDATION`):
   - [ ] Neutralize leading spreadsheet formula trigger characters (`=`, `+`, `-`, `@`, `\t`, `\r`) in `restaurantsToCsv` (prepend with a single quote `'`) so exported CSV files cannot execute arbitrary formulas in spreadsheet applications
@@ -66,3 +79,5 @@
 - [ ] Development Roadmap & Published Releases page:
   - [ ] Add "Development Roadmap & Published Releases" link at the bottom of the Gear menu drawer
   - [ ] Dedicated `/roadmap` page displaying HTML-rendered view of `roadmap.md` with return navigation
+- [ ] Homepage FAQ: make the source-code URL clickable, opening a new browser tab (Batch 3).
+- [ ] Reconstruct historical prebuild chatlogs for previous builds (Batch 3); current build record created, historical records still pending.
