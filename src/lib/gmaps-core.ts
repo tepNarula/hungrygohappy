@@ -22,10 +22,14 @@ export async function politeFetch(url: string, init: RequestInit = {}, attempts 
     const res = await fetch(url, { ...init, headers: { ...BROWSER_HEADERS, ...(init.headers ?? {}) } });
     if (res.status !== 429 && res.status < 500) return res;
     last = res;
-    if (i < attempts - 1) await sleep(800 * 2 ** i);
+    if (i < attempts - 1) {
+      await res.body?.cancel();
+      await sleep(Math.min(1000, 500 * 2 ** i));
+    }
   }
   if (last?.status === 429) throw new RateLimitedError("rate limited");
-  return last!;
+  if (!last) throw new Error("No fetch attempts performed");
+  return last;
 }
 
 export function extractListId(url: string): string | undefined {
@@ -56,10 +60,15 @@ export async function expandShortlink(url: string): Promise<string> {
     if (!SHORT_HOSTS.has(host)) return current;
     const res = await politeFetch(current, { redirect: "manual" });
     const loc = res.headers.get("location");
-    if (!loc) return current;
-    current = new URL(loc, current).toString();
+    await res.body?.cancel();
+    if (!loc) throw new Error("Google Maps did not return a redirect");
+    const next = new URL(loc, current);
+    if (next.protocol !== "https:" || !/^(?:maps\.app\.goo\.gl|goo\.gl|(?:www\.|maps\.)?google\.[a-z.]+)$/.test(next.hostname)) {
+      throw new Error("Invalid Google Maps redirect");
+    }
+    current = next.toString();
   }
-  return current;
+  throw new Error("Too many Google Maps redirects");
 }
 
 export async function fetchGmapsList(listId: string): Promise<{ title?: string | undefined; places: ListPlace[] }> {

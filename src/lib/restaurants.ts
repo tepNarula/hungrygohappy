@@ -4,6 +4,9 @@ export interface Restaurant {
   googleMapsUrl: string;
   /** Optional display name; auto-derived from the URL when missing. */
   name?: string | undefined;
+  /** Last imported Google name and originating tracked list (protect custom edits on refresh). */
+  gmapsName?: string | undefined;
+  sourceListId?: string | undefined;
   visits?: number | undefined;
   lastVisitedAt?: string | undefined;
   /** Individual visit timestamps for rolling visit counts. */
@@ -288,6 +291,7 @@ export function normalizeNameKey(name: string | undefined | null): string {
   if (!name) return "";
   return formatPlaceName(name)
     .replace(/\[[^\]]*\]/g, "")
+    .replace(/^'/, "")
     .toLowerCase()
     .normalize("NFKD")
     .replace(/[^\p{L}\p{N}]+/gu, "");
@@ -315,6 +319,31 @@ export function makeDedupeIndex(existing: Restaurant[] = []): DedupeIndex {
   };
   for (const r of existing) index.add({ url: r.googleMapsUrl || r.id, name: displayName(r), placeId: r.placeId });
   return index;
+}
+
+/** Re-check at confirmation and at each importing channel, including incoming-batch duplicates. */
+export function uniqueRestaurants(candidates: Restaurant[], existing: Restaurant[]): Restaurant[] {
+  const index = makeDedupeIndex(existing);
+  return candidates.filter((r) => {
+    const probe = { url: r.googleMapsUrl, name: r.name, placeId: r.placeId };
+    if (!isValidGmapsUrl(probe.url) || index.has(probe)) return false;
+    index.add(probe);
+    return true;
+  });
+}
+
+/** Neutralize spreadsheet formulas even with whitespace before the trigger. Idempotent. */
+export function safeSpreadsheetText(value: string): string {
+  return /^(?:[\t\r\n]|\s*[=+\-@])/.test(value) ? `'${value}` : value;
+}
+
+export function preparePreviewImport(rows: PreviewRow[]): Restaurant[] {
+  return uniqueRestaurants(rows.filter((r) => r.include && r.status === "ok").map((r) => ({
+    id: r.url,
+    googleMapsUrl: r.url,
+    name: safeSpreadsheetText(r.name?.trim() || nameFromGmapsUrl(r.url) || "") || undefined,
+    ...r.meta,
+  })), []);
 }
 
 /** Validate candidate rows against the existing list and each other (same URL, place id, or place name = duplicate). */
@@ -347,7 +376,8 @@ export function embedUrlFor(r: Restaurant): string {
 }
 
 function csvCell(v: string): string {
-  return /[",\n\r]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+  const safe = safeSpreadsheetText(v);
+  return /[",\n\r]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
 }
 
 /** Export every restaurant attribute as CSV (visit_dates separated by "|"). */
