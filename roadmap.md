@@ -2,36 +2,37 @@
 
 ## Completed Features
 
-- [x] Rebuild Hungry Roulette (cream bg, chunky orange button, settings gear)
-- [x] CSV upload for adding restaurants (verified: 3-row CSV imported, dedupe works)
-- [x] /add?gmapslink=... route to add a restaurant via URL parameter (verified: name extracted, duplicate detected)
-- [x] Import preview for all add channels
-- [x] Spin result: mini map, Let's Go, re-spin, reset
-- [x] Update spin label ("Where To Eat/Drink Today?") and limit gear menu to five restaurants
-- [x] Full sortable restaurant list with map links and three-month visit counts
-- [x] Verify menu, sorting, and visit recording
-- [x] Share dialog + CSV download
-- [x] Group-code lists (/{code}, /{code}/add)
-- [x] + Add dialog (Google Maps link/list + CSV) with inline name editing
-- [x] Edit/delete mode in All restaurants
-- [x] FAQ homepage ("Hungry? Let's Go Happy!")
-- [x] Cloud sync across devices
-- [x] "Copy to another list" in Share dialog (existing or new target, keep-history vs start-fresh choice, duplicate skip, cloud sync)
-- [x] Daily auto-refresh of imported Google Maps lists (03:00 Bangkok)
-- [x] Single-place names formatted as "{name} [{plusCode}]"
-- [x] List-sharing tip in Add dialog
-- [x] Resolver browser headers + HTTP 429 retry backoff + "Google Maps is busy" message
-- [x] Database foundation for location fields (`city`, `province`, `postal_code`, `country`), place opening hours parser, and tracked list deletion RLS policy
-- [x] Mobile Google Maps shortlink resolver: Manual 302 redirect handling reading `Location` header directly to bypass 429 rate-limiting
-- [x] Active ImportPreview JSX fix: valid className for flex layout
-- [x] CSV export formula neutralization (`safeSpreadsheetText` prepending `'` on export and preview confirmation)
-- [x] Importer reliability & deduplication (Batch 1 — verified live in browser):
-  - [x] Mobile Google Maps shortlink manual 302 redirection (verified live: resolved 115 places without rate limits)
-  - [x] Shared-list source duplicate prevention (verified live: detects already-tracked list and offers "Sync now")
-  - [x] Cross-format place deduplication by normalized URL and name (verified live: flags duplicate places, deselects, updates button count)
-  - [x] Custom-name-safe sync planner (`planGmapsSync` protecting user-renamed places)
-  - [x] Display-only URL truncation to 80 characters with trailing ellipses in preview
-- [x] Dev-logs prebuild conversation log: Created `dev-logs/20261103-112700_ICT_prebuild_chatlog.md` with executive summary and complete chat history
+- [x] (2026-10-14) Rebuild Hungry Roulette (cream bg, chunky orange button, settings gear)
+- [x] (2026-10-14) CSV upload for adding restaurants (verified: 3-row CSV imported, dedupe works)
+- [x] (2026-10-14) /add?gmapslink=... route to add a restaurant via URL parameter (verified: name extracted, duplicate detected)
+- [x] (2026-10-15) Changed restaurant data schema: Google Maps URL as primary unique key, name optional / auto-retrieved
+- [x] (2026-10-15) Import preview for all add channels
+- [x] (2026-10-15) Spin result: mini map, Let's Go, re-spin, reset
+- [x] (2026-10-15) Update spin label ("Where To Eat/Drink Today?") and limit gear menu to five restaurants
+- [x] (2026-10-15) Full sortable restaurant list with map links and three-month visit counts
+- [x] (2026-10-16) Verify menu, sorting, and visit recording
+- [x] (2026-10-16) Share dialog + CSV download
+- [x] (2026-10-16) Group-code lists (/{code}, /{code}/add)
+- [x] (2026-10-19) + Add dialog (Google Maps link/list + CSV) with inline name editing
+- [x] (2026-10-19) Edit/delete mode in All restaurants
+- [x] (2026-10-20) FAQ homepage ("Hungry? Let's Go Happy!")
+- [x] (2026-10-20) Cloud sync across devices
+- [x] (2026-10-22) "Copy to another list" in Share dialog (existing or new target, keep-history vs start-fresh choice, duplicate skip, cloud sync)
+- [x] (2026-10-26) Daily auto-refresh of imported Google Maps lists (03:00 Bangkok)
+- [x] (2026-10-26) Single-place names formatted as "{name} [{plusCode}]"
+- [x] (2026-10-26) List-sharing tip in Add dialog
+- [x] (2026-10-26) Resolver browser headers + HTTP 429 retry backoff + "Google Maps is busy" message
+- [x] (2026-11-02) Database foundation for location fields (`city`, `province`, `postal_code`, `country`), place opening hours parser, and tracked list deletion RLS policy
+- [x] (2026-11-02) Mobile Google Maps shortlink resolver: Manual 302 redirect handling reading `Location` header directly to bypass 429 rate-limiting
+- [x] (2026-11-03) Active ImportPreview JSX fix: valid className for flex layout
+- [x] (2026-11-03) CSV export formula neutralization (`safeSpreadsheetText` prepending `'` on export and preview confirmation)
+- [x] (2026-11-03) Importer reliability & deduplication (Batch 1 — verified live in browser):
+  - [x] (2026-11-03) Mobile Google Maps shortlink manual 302 redirection (verified live: resolved 115 places without rate limits)
+  - [x] (2026-11-03) Shared-list source duplicate prevention (verified live: detects already-tracked list and offers "Sync now")
+  - [x] (2026-11-03) Cross-format place deduplication by normalized URL and name (verified live: flags duplicate places, deselects, updates button count)
+  - [x] (2026-11-03) Custom-name-safe sync planner (`planGmapsSync` protecting user-renamed places)
+  - [x] (2026-11-03) Display-only URL truncation to 80 characters with trailing ellipses in preview
+- [x] (2026-11-03) Dev-logs prebuild conversation log: Created `dev-logs/20261103-112700_ICT_prebuild_chatlog.md` with executive summary and complete chat history
 
 ---
 
