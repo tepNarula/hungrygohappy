@@ -9,6 +9,8 @@
 
 ## Pending Features & Enhancements
 
+- [ ] (2026-11-03) Comprehensive educational code documentation:
+  - [ ] As a learning aide to competent students and novice software developers, always include comments and docstrings in all code files to concisely explain the intents, logic, algorithms, and corresponding design goals for every line of instructions, definitions, and declarations
 - [ ] (2026-11-03) Prebuild chatlog records:
   - [ ] Reconstruct historical prebuild chatlogs for earlier builds in `/dev-logs`
 - [ ] (2026-11-03) Homepage FAQ improvements:
