@@ -9,11 +9,13 @@ export function ImportPreview({
   onRowsChange,
   onConfirm,
   onCancel,
+  busy = false,
 }: {
   rows: PreviewRow[];
   onRowsChange: (rows: PreviewRow[]) => void;
   onConfirm: (restaurants: Restaurant[]) => void;
   onCancel: () => void;
+  busy?: boolean;
 }) {
   const chosen = rows.filter((r) => r.include && r.status === "ok");
   const toggle = (key: string) =>
@@ -66,7 +68,7 @@ export function ImportPreview({
       <div className="flex flex-col gap-2">
 
         <Button
-          disabled={chosen.length === 0}
+          disabled={busy || chosen.length === 0}
           onClick={() =>
             onConfirm(
               preparePreviewImport(rows),
@@ -78,6 +80,7 @@ export function ImportPreview({
         </Button>
         <Button
           variant="outline"
+          disabled={busy}
           onClick={onCancel}
           className="flex-1 rounded-lg border border-input px-4 py-2 text-sm font-medium"
         >
