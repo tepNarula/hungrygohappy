@@ -11,9 +11,10 @@ import {
   normalizeListCode,
   restaurantsToCsv,
   saveRestaurants,
+  uniqueRestaurants,
   type Restaurant,
 } from "@/lib/restaurants";
-import { upsertCloud } from "@/lib/cloud-sync";
+import { syncWithLocal, upsertCloud } from "@/lib/cloud-sync";
 
 type Mode = "share" | "copy" | "copied";
 
@@ -34,6 +35,7 @@ export function ShareDialog({
   const [target, setTarget] = useState("");
   const [keepHistory, setKeepHistory] = useState<"keep" | "fresh">("keep");
   const [copyError, setCopyError] = useState<string | null>(null);
+  const [copyBusy, setCopyBusy] = useState(false);
   const [copyResult, setCopyResult] = useState<{ list: string; added: number; skipped: number } | null>(null);
 
   useEffect(() => {
@@ -73,7 +75,7 @@ export function ShareDialog({
     setTimeout(() => URL.revokeObjectURL(href), 30_000);
   };
 
-  const copyToList = () => {
+  const copyToList = async () => {
     const code = normalizeListCode(target);
     if (!target.trim()) {
       setCopyError("Enter a list name first.");
@@ -83,18 +85,21 @@ export function ShareDialog({
       setCopyError("That's the current list — pick a different name.");
       return;
     }
-    const existing = loadRestaurants(code);
-    const existingIds = new Set(existing.map((r) => r.id));
-    const fresh = restaurants.filter((r) => !existingIds.has(r.id));
+    setCopyBusy(true);
+    try {
+    const existing = await syncWithLocal(code, loadRestaurants(code));
+    const fresh = uniqueRestaurants(restaurants, existing);
     const toAdd: Restaurant[] = fresh.map((r) =>
       keepHistory === "keep"
         ? r
         : { id: r.id, googleMapsUrl: r.googleMapsUrl, name: r.name },
     );
     saveRestaurants([...existing, ...toAdd], code);
-    upsertCloud(code, toAdd).catch(() => {});
+    await upsertCloud(code, toAdd);
     setCopyResult({ list: code, added: toAdd.length, skipped: restaurants.length - toAdd.length });
     setMode("copied");
+    } catch { setCopyError("Couldn't copy these places. Please try again."); }
+    finally { setCopyBusy(false); }
   };
 
   return (
@@ -180,7 +185,7 @@ export function ShareDialog({
               <Button variant="ghost" onClick={() => setMode("share")}>
                 Back
               </Button>
-              <Button onClick={copyToList} className="flex-1">
+              <Button disabled={copyBusy} onClick={() => void copyToList()} className="flex-1">
                 Copy {restaurants.length} place{restaurants.length === 1 ? "" : "s"}
               </Button>
             </div>

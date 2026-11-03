@@ -6,11 +6,11 @@ export const Route = createFileRoute("/$list/add")({
   validateSearch: (search: Record<string, unknown>) => ({
     gmapslink: typeof search["gmapslink"] === "string" ? search["gmapslink"] : "",
   }),
-  head: () => ({
+  head: ({ params }) => ({
     meta: [
-      { title: "Add a restaurant" },
+      { title: `Add to ${params.list} — Hungry Go Happy` },
       { name: "description", content: "Add a restaurant to your lunch roulette from a Google Maps link." },
-      { property: "og:title", content: "Add a restaurant" },
+      { property: "og:title", content: `Add to ${params.list} — Hungry Go Happy` },
       { property: "og:description", content: "Add a restaurant to your lunch roulette from a Google Maps link." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
