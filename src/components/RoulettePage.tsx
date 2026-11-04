@@ -9,8 +9,9 @@ import {
 } from "@/lib/restaurants";
 import { RestaurantVisitList } from "@/components/RestaurantVisitList";
 import { AddRestaurantsDialog } from "@/components/AddRestaurantsDialog";
+import { TrackedListsDialog } from "@/components/TrackedListsDialog";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Check, List, Pencil, Plus, Share2 } from "lucide-react";
+import { ArrowLeft, Check, List, ListRestart, Pencil, Plus, Share2 } from "lucide-react";
 import { ShareDialog } from "@/components/ShareDialog";
 import { fetchCloudList, pushDiff, subscribeList, syncWithLocal } from "@/lib/cloud-sync";
 
@@ -19,6 +20,7 @@ export function RoulettePage({ list, initialView }: { list: string; initialView?
   const [picked, setPicked] = useState<Restaurant | null>(null);
   const [spinning, setSpinning] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(initialView === "all");
+  const [trackedOpen, setTrackedOpen] = useState(false);
 
   const latest = useRef<Restaurant[]>([]);
   latest.current = restaurants;
@@ -160,8 +162,10 @@ export function RoulettePage({ list, initialView }: { list: string; initialView?
           initialShowAll={initialView === "all"}
           onChange={update}
           onClose={() => setSettingsOpen(false)}
+          onTracked={() => { setSettingsOpen(false); setTrackedOpen(true); }}
         />
       )}
+      <TrackedListsDialog open={trackedOpen} onOpenChange={setTrackedOpen} list={list} onSynced={setRestaurants} />
     </div>
   );
 }
@@ -185,12 +189,14 @@ function SettingsPanel({
   initialShowAll,
   onChange,
   onClose,
+  onTracked,
 }: {
   restaurants: Restaurant[];
   list: string;
   initialShowAll: boolean;
   onChange: (r: Restaurant[]) => void;
   onClose: () => void;
+  onTracked: () => void;
 }) {
   const [sortMode, setSortMode] = useState<"visits" | "lastVisit">("visits");
   const [showAll, setShowAll] = useState(initialShowAll);
@@ -319,6 +325,7 @@ function SettingsPanel({
           </ul>
 
           <Button variant="outline" className="mt-4 w-full" onClick={() => setShowAll(true)}><List />All restaurants ({restaurants.length})</Button>
+          <Button variant="outline" className="mt-2 h-auto w-full whitespace-normal" onClick={onTracked}><ListRestart />Tracked Google Maps Lists</Button>
 
           </>}
         </div>

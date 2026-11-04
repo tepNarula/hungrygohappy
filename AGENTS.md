@@ -20,3 +20,5 @@
 - Manual tracked-source sync uses the normal group-code RLS client and the shared sync planner; scheduled sync uses the same planner after cron authentication, preserving unknown/custom name baselines.
 - Spreadsheet formula neutralization applies to every exported cell and preview-confirmed name; export remains the security boundary for legacy or directly edited data.
 - Keep one ICT-timestamped prebuild conversation record per build in dev-logs; reconstructed historical records must be labeled, never presented as verbatim transcripts.
+- Keep tracked-source management in its own dialog opened from settings; use group-scoped ordinary Cloud clients and the shared sync planner, and remove tracking without deleting places or visit history.
+- Document authored code with educational declaration/control-flow comments without changing executable behavior; never edit managed generated files for documentation.
