@@ -6,4 +6,4 @@ took https://hungry-roulette.lovable.app/ as a starting point and built on it fu
 
 built with [Lovable](https://lovable.dev).
 
-## [Development Roadmap & Releases History](./ROADMAP.md)
+___[Development Roadmap & Releases History](./ROADMAP.md)___
