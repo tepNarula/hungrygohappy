@@ -13,38 +13,39 @@
   - [ ] As a learning aide to competent students and novice software developers, always include comments and docstrings in all code files to concisely explain the intents, logic, algorithms, and corresponding design goals for every line of instructions, definitions, and declarations
 - [ ] (2026-11-03) Prebuild chatlog records:
   - [ ] Reconstruct historical prebuild chatlogs for earlier builds in `/dev-logs`
-- [ ] (2026-11-03) Homepage FAQ improvements:
-  - [ ] Make source code URL in "Can I get the sourcecode?" answer a clickable link opening in a new tab
-- [ ] (2026-11-02) Development Roadmap & Published Releases page:
-  - [ ] Add "Development Roadmap & Published Releases" link at the bottom of the Gear menu drawer
-  - [ ] Dedicated `/roadmap` page displaying HTML-rendered view of `roadmap.md` with return navigation
-- [ ] (2026-11-02) Database schema documentation:
-  - [ ] Create dedicated `SCHEMA.md` documenting tables, columns, constraints, and RLS policies
-  - [ ] Reference and link `SCHEMA.md` from `README.md`
-- [ ] (2026-11-02) "Review before adding" dialog polish:
-  - [ ] Stack primary "Add {N}" button above "Cancel" button vertically
-  - [ ] Support multi-line word-wrapping for reviewed place names
-- [ ] (2026-11-02) Top-left header controls:
-  - [ ] Default to dark theme on initial visit
-  - [ ] Sun/Moon theme switcher toggle button at top-left of every page
-  - [ ] Desktop/Mobile viewport frame toggle button next to theme switcher
-- [ ] (2026-11-02) Dedicated "All Restaurants" full page:
-  - [ ] Move from slide-out Gear drawer to dedicated full-page route (`/{list}/places`)
-  - [ ] Include back navigation, sorting, and inline editing/deletion
-- [ ] (2026-11-02) Real-time opening schedule & status badges:
-  - [ ] Check place opening hours against client device's local time
-  - [ ] Display status badge: Currently open (upcoming closing time), Opening soon (within 60m), Closing soon (within 60m), or Currently closed (next opening day & time / temporarily / permanently closed)
-  - [ ] Result screen button layout: Place "Back to Roulette" button to the left of "Let's Go!" button
-- [ ] (2026-11-02) Location metadata & spin filtering:
-  - [ ] Fetch, extract, and sync city, province, postal code, and country during import
-  - [ ] Pre-spin screen: Location filter input widget positioned below Live Match Counter and Quick Suggestion Chips
-  - [ ] Spin result screen: Display location metadata under place name
-- [ ] (2026-11-02) Tracked Google Maps lists manager:
+- [ ] (2026-11-02) Tracked Google Maps lists manager & resolver resilience:
   - [ ] Add button on Gear menu opening manager dialog/panel
   - [ ] View all synced lists and their last sync timestamps
   - [ ] Manual refresh for individual lists or all lists at once
   - [ ] Add new Google Maps shared list to tracked auto-sync sources
   - [ ] Remove existing tracked list(s)
+  - [ ] Harden backend resolver against 429 rate limits using contextual headers (`Referer: https://www.google.com/maps/`, `sec-fetch-*`) and extended jittered exponential backoff
+- [ ] (2026-11-02) Location metadata & spin filtering:
+  - [ ] Fetch, extract, and sync city, province, postal code, and country during import
+  - [ ] Pre-spin screen: Location filter input widget positioned below Live Match Counter and Quick Suggestion Chips
+  - [ ] Spin result screen: Display location metadata under place name
+- [ ] (2026-11-02) Real-time opening schedule & status badges:
+  - [ ] Check place opening hours against client device's local time
+  - [ ] Display status badge: Currently open (upcoming closing time), Opening soon (within 60m), Closing soon (within 60m), or Currently closed (next opening day & time / temporarily / permanently closed)
+  - [ ] Result screen button layout: Place "Back to Roulette" button to the left of "Let's Go!" button
+- [ ] (2026-11-02) Dedicated "All Restaurants" full page:
+  - [ ] Move from slide-out Gear drawer to dedicated full-page route (`/{list}/places`)
+  - [ ] Include back navigation, sorting, and inline editing/deletion
+- [ ] (2026-11-02) Top-left header controls:
+  - [ ] Default to dark theme on initial visit
+  - [ ] Sun/Moon theme switcher toggle button at top-left of every page
+  - [ ] Desktop/Mobile viewport frame toggle button next to theme switcher
+- [ ] (2026-11-02) "Review before adding" dialog polish:
+  - [ ] Allow dialog width to scale up to 90% of the viewport (`max-w-[90vw]`) to maximize content visibility
+  - [ ] Stack primary "Add {N}" button vertically on top of "Cancel" button
+  - [ ] Support multi-line word-wrapping for reviewed place names
+- [ ] (2026-11-02) Database schema & dependency documentation:
+  - [ ] Create dedicated `SCHEMA.md` documenting tables, columns, constraints, and RLS policies
+  - [ ] Reference and link `SCHEMA.md` from `README.md`
+  - [ ] Maintain an inventory of all software-library & cloud-service dependencies in `README.md`
+- [ ] (2026-11-02) Development Roadmap & Releases History page:
+  - [ ] Add "Development Roadmap & Releases History" link at the bottom of the Gear menu drawer
+  - [ ] Dedicated `/roadmap` page displaying HTML-rendered view of `ROADMAP.md` with return navigation
 
 ---
 
