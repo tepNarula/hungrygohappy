@@ -1,4 +1,4 @@
-import { preparePreviewImport, type PreviewRow, type Restaurant } from "@/lib/restaurants";
+import { preparePreviewImport, truncateForDisplay, type PreviewRow, type Restaurant } from "@/lib/restaurants";
 import { nameFromGmapsUrl } from "@/lib/restaurants";
 import { Button } from "@/components/ui/button";
 
@@ -52,7 +52,9 @@ export function ImportPreview({
                   aria-label="Restaurant name"
                   className="w-full rounded border border-transparent bg-transparent px-1 py-0.5 font-medium outline-none hover:border-input focus:border-input focus:bg-card"
                 />
-                <p className="truncate px-1 text-xs text-muted-foreground">{r.url || "(empty)"}</p>
+                <p className="truncate px-1 text-xs text-muted-foreground">
+                    {truncateForDisplay(r.url) || "(empty)"}
+                </p>
               </div>
               <span
                 className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
