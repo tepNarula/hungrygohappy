@@ -122,6 +122,32 @@ export async function getTrackedSource(list: string, sourceId: string) {
   return data;
 }
 
+/** A source is scoped to a group; its timestamp records successful refreshes only. */
+export interface TrackedSource {
+  id: string;
+  gmaps_list_id: string;
+  source_url: string;
+  title: string | null;
+  last_synced_at: string | null;
+}
+
+/** Fetch only this group's sources with the ordinary shared-link RLS client. */
+export async function fetchTrackedSources(list: string): Promise<TrackedSource[]> {
+  const { data, error } = await supabase.from("gmaps_list_sources")
+    .select("id, gmaps_list_id, source_url, title, last_synced_at")
+    .eq("list_code", normalizeListCode(list)).order("created_at", { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+}
+
+/** Untracking stops scheduled refreshes; it deliberately never deletes restaurants. */
+export async function removeTrackedSources(list: string, ids: string[]): Promise<void> {
+  if (ids.length === 0) return;
+  const { error } = await supabase.from("gmaps_list_sources").delete()
+    .eq("list_code", normalizeListCode(list)).in("id", ids);
+  if (error) throw error;
+}
+
 /** Shared group-code access uses the ordinary RLS client, never privileged credentials. */
 export async function syncResolvedSource(list: string, sourceId: string, candidates: Restaurant[]) {
   const existing = await fetchCloudList(list);

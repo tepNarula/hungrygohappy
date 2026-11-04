@@ -13,21 +13,44 @@ export const BROWSER_HEADERS: Record<string, string> = {
 export class RateLimitedError extends Error {}
 export class ListNotFoundError extends Error {}
 
+/** XHR context belongs on the entity-list request, not on a shortlink navigation. */
+export const LIST_HEADERS: Record<string, string> = {
+  Accept: "*/*",
+  Referer: "https://www.google.com/maps/",
+  "sec-fetch-dest": "empty",
+  "sec-fetch-mode": "cors",
+  "sec-fetch-site": "same-origin",
+};
+
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-/** fetch with browser-like headers; retries on 429/5xx with backoff. */
-export async function politeFetch(url: string, init: RequestInit = {}, attempts = 3): Promise<Response> {
+/** Bound retries and respect Retry-After without letting a provider stall indefinitely. */
+export function retryDelay(attempt: number, retryAfter: string | null, now = Date.now()): number {
+  const seconds = retryAfter == null ? NaN : Number(retryAfter);
+  const providerDelay = Number.isFinite(seconds) ? seconds * 1000 : retryAfter ? Date.parse(retryAfter) - now : 0;
+  const backoff = 1000 * 2 ** attempt + Math.floor(Math.random() * 500);
+  return Math.min(10_000, Math.max(backoff, Number.isFinite(providerDelay) ? providerDelay : 0));
+}
+
+/** Four bounded attempts with browser headers, jitter and per-request timeouts. */
+export async function politeFetch(url: string, init: RequestInit = {}, attempts = 4): Promise<Response> {
   let last: Response | null = null;
   for (let i = 0; i < attempts; i++) {
-    const res = await fetch(url, { ...init, headers: { ...BROWSER_HEADERS, ...(init.headers ?? {}) } });
+    const headers = new Headers(BROWSER_HEADERS);
+    new Headers(init.headers).forEach((value, key) => headers.set(key, value));
+    const res = await fetch(url, { ...init, headers, signal: init.signal ?? AbortSignal.timeout(15_000) });
     if (res.status !== 429 && res.status < 500) return res;
     last = res;
     if (i < attempts - 1) {
+      const delay = retryDelay(i, res.headers.get("retry-after"));
       await res.body?.cancel();
-      await sleep(Math.min(1000, 500 * 2 ** i));
+      await sleep(delay);
     }
   }
-  if (last?.status === 429) throw new RateLimitedError("rate limited");
+  if (last?.status === 429) {
+    await last.body?.cancel();
+    throw new RateLimitedError("rate limited");
+  }
   if (!last) throw new Error("No fetch attempts performed");
   return last;
 }
@@ -73,7 +96,7 @@ export async function expandShortlink(url: string): Promise<string> {
 
 export async function fetchGmapsList(listId: string): Promise<{ title?: string | undefined; places: ListPlace[] }> {
   const api = `https://www.google.com/maps/preview/entitylist/getlist?hl=en&pb=!1m4!1s${listId}!2e1!3m1!1e1!2e2!3e2!4i500!16b1`;
-  const res = await politeFetch(api);
+  const res = await politeFetch(api, { headers: LIST_HEADERS });
   if (!res.ok) throw new ListNotFoundError(`status ${res.status}`);
   const text = await res.text();
   let json: any;
