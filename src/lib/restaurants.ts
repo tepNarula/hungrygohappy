@@ -364,7 +364,7 @@ export function buildPreviewRows(
 }
 
 /** Display-only shortening of long URLs. */
-export function truncateForDisplay(text: string, max = 80): string {
+export function truncateForDisplay(text: string, max = 60): string {
   return text.length > max ? `${text.slice(0, max)}...` : text;
 }
 
