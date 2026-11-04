@@ -9,18 +9,6 @@
 
 ## Pending Features & Enhancements
 
-- [ ] (2026-11-04) Build in progress: educational code documentation, historical prebuild chatlogs, and Tracked Google Maps Lists manager with resolver resilience (requested items #1–#3).
-- [ ] (2026-11-03) Comprehensive educational code documentation:
-  - [ ] As a learning aide to competent students and novice software developers, always include comments and docstrings in all code files to concisely explain the intents, logic, algorithms, and corresponding design goals for every line of instructions, definitions, and declarations
-- [ ] (2026-11-03) Prebuild chatlog records:
-  - [ ] Reconstruct historical prebuild chatlogs for earlier builds in `/dev-logs`
-- [ ] (2026-11-02) Tracked Google Maps lists manager & resolver resilience:
-  - [ ] Add button on Gear menu opening manager dialog/panel
-  - [ ] View all synced lists and their last sync timestamps
-  - [ ] Manual refresh for individual lists or all lists at once
-  - [ ] Add new Google Maps shared list to tracked auto-sync sources
-  - [ ] Remove existing tracked list(s)
-  - [ ] Harden backend resolver against 429 rate limits using contextual headers (`Referer: https://www.google.com/maps/`, `sec-fetch-*`) and extended jittered exponential backoff
 - [ ] (2026-11-02) Location metadata & spin filtering:
   - [ ] Fetch, extract, and sync city, province, postal code, and country during import
   - [ ] Pre-spin screen: Location filter input widget positioned below Live Match Counter and Quick Suggestion Chips
@@ -50,9 +38,27 @@
 
 ---
 
+## Partially Implemented / Unverified
+
+- [ ] (2026-11-04) Tracked Google Maps lists manager & resolver resilience:
+  - [x] (2026-11-04) Code implemented: `TrackedListsDialog.tsx`, cloud sync functions (`fetchTrackedSources`, `deleteTrackedSource`, `addTrackedSource`), contextual headers and jittered backoff in `gmaps-core.ts`
+  - [x] (2026-11-04) Unit and integration test suite passing (7 tests in `gmaps-retries.test.ts`, `gmaps-sync-plan.test.ts`, and `tracked-sources.test.ts`)
+  - [ ] End-to-end live browser verification with live Google Maps shared lists and sync workflows
+- [ ] (2026-11-03) Prebuild chatlog records in `/dev-logs`:
+  - [x] (2026-11-03) Created `dev-logs/20261103-112700_ICT_prebuild_chatlog.md`
+  - [ ] Reconstruct historical prebuild chatlogs for earlier builds in `/dev-logs`
+  - [ ] Log prebuild chat transcript for the 2026-11-04 build turn
+- [ ] (2026-11-03) Comprehensive educational code documentation:
+  - [x] Explanatory comments added to new test and utility files
+  - [ ] Retrofit educational docstrings and control-flow explanations across all pre-existing source files
+- [ ] (2026-11-02) Database foundation for location fields & place opening hours parser:
+  - [x] (2026-11-02) Database columns (`city`, `province`, `postal_code`, `country`, `gmaps_place_id`) and `src/lib/opening-hours.ts` added to codebase
+  - [ ] Wire location extraction into import flow, UI candidate filter, and opening status badges
+
+---
+
 ## Completed Features
 
-- [x] (2026-11-03) Dev-logs prebuild conversation log: Created `dev-logs/20261103-112700_ICT_prebuild_chatlog.md` with executive summary and complete chat history
 - [x] (2026-11-03) Importer reliability & deduplication (Batch 1 — verified live in browser):
   - [x] (2026-11-03) Display-only URL truncation to 80 characters with trailing ellipses in preview
   - [x] (2026-11-03) Custom-name-safe sync planner (`planGmapsSync` protecting user-renamed places)
@@ -62,7 +68,6 @@
 - [x] (2026-11-03) CSV export formula neutralization (`safeSpreadsheetText` prepending `'` on export and preview confirmation)
 - [x] (2026-11-03) Active ImportPreview JSX fix: valid className for flex layout
 - [x] (2026-11-02) Mobile Google Maps shortlink resolver: Manual 302 redirect handling reading `Location` header directly to bypass 429 rate-limiting
-- [x] (2026-11-02) Database foundation for location fields (`city`, `province`, `postal_code`, `country`), place opening hours parser, and tracked list deletion RLS policy
 - [x] (2026-10-26) Resolver browser headers + HTTP 429 retry backoff + "Google Maps is busy" message
 - [x] (2026-10-26) List-sharing tip in Add dialog
 - [x] (2026-10-26) Single-place names formatted as "{name} [{plusCode}]"
