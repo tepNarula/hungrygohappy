@@ -116,8 +116,8 @@ export function HomePageFaq() {
               <AccordionTrigger className="font-display text-base">{f.q}</AccordionTrigger>
               <AccordionContent>
                 <ul className="list-disc space-y-2 rounded-2xl bg-muted p-4 pl-8 text-muted-foreground">
-                  {f.a.map((line) => (
-                    <li key={line}>{line}</li>
+                  {f.a.map((line, lineIndex) => (
+                    <li key={lineIndex}>{line}</li>
                   ))}
                 </ul>
               </AccordionContent>
