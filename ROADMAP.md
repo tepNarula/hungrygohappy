@@ -9,6 +9,12 @@
 
 ## Pending Fixes, Features, and Enhancements
 
+- [ ] (2026-11-05) Test suite documentation (`/src/test/README.md`):
+  - [ ] Maintain a markdown document `/src/test/README.md` describing the purposes, coverage, and design of all source files under the `/src/test/` directory
+- [ ] (2026-11-05) Test suite inventory & test scripts directory structure:
+  - [ ] Maintain an inventory of all unit tests and test-script source files (ever developed and used) in the repository under `/src/test/`
+  - [ ] Move deprecated/obsolete test source files into subdirectory `/src/test/deprecated/`
+  - [ ] Keep stand-alone executable Python test scripts under `/src/test/python-scripts/`
 - [ ] (2026-11-05) Shared list import & tracked sync polish:
   - [ ] Set initial `last_synced_at` timestamp on newly registered tracked sources (currently shows "Not synced yet" upon first import until manual/cron sync)
   - [ ] Fix Tracked Lists Dialog UI state lag when refreshing individual source (local React state does not immediately reflect updated timestamp without closing/reopening)
