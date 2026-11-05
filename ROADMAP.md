@@ -7,8 +7,13 @@
 
 ---
 
-## Pending Features & Enhancements
+## Pending Fixes, Features, and Enhancements
 
+- [ ] (2026-11-05) Shared list import & tracked sync polish:
+  - [ ] Set initial `last_synced_at` timestamp on newly registered tracked sources (currently shows "Not synced yet" upon first import until manual/cron sync)
+  - [ ] Fix Tracked Lists Dialog UI state lag when refreshing individual source (local React state does not immediately reflect updated timestamp without closing/reopening)
+  - [ ] Expose extracted location details in the Import Preview dialog (display parsed city/province/country alongside name and URL)
+  - [ ] Support country inference in `parseAddress()` when Google Maps address omits country token (e.g. Bangkok addresses with postal code `10xxx` infer Thailand)
 - [ ] (2026-11-02) Location metadata & spin filtering (UI):
   - [ ] Pre-spin screen: Location filter input widget positioned below Live Match Counter and Quick Suggestion Chips
   - [ ] Spin result screen: Display location metadata under place name
@@ -44,12 +49,8 @@
   - [x] (2026-11-02) Database columns (`city`, `province`, `postal_code`, `country`, `gmaps_place_id`) and `src/lib/opening-hours.ts` added to codebase
   - [x] (2026-11-05) Location parsing and persistence wired through `resolveGmapsLink`, `syncResolvedSource`, `fetchCloudList`, and `refresh-gmaps-lists`
   - [x] (2026-11-05) `getPlaceHours` server function implemented in `src/lib/gmaps-resolver.functions.ts`
-  - [ ] End-to-end verification of location persistence and server-side hours lookup
+  - [x] (2026-11-05) Live browser test verified: cross-device location persistence and sync functioning
   - [ ] Wire location filter and opening status badges into RoulettePage UI
-- [ ] (2026-11-04) Tracked Google Maps lists manager & resolver resilience:
-  - [x] (2026-11-04) Code implemented: `TrackedListsDialog.tsx`, cloud sync functions (`fetchTrackedSources`, `deleteTrackedSource`, `addTrackedSource`), contextual headers and jittered backoff in `gmaps-core.ts`
-  - [x] (2026-11-04) Unit and integration test suite passing (7 tests in `gmaps-retries.test.ts`, `gmaps-sync-plan.test.ts`, and `tracked-sources.test.ts`)
-  - [ ] End-to-end live browser verification with live Google Maps shared lists and sync workflows
 - [ ] (2026-11-03) Prebuild chatlog records in `/dev-logs`:
   - [x] (2026-11-03) Created `dev-logs/20261103-112700_ICT_prebuild_chatlog.md`
   - [x] (2026-11-05) Created `dev-logs/20261105-140834_ICT_prebuild_chatlog.md`
@@ -63,6 +64,10 @@
 
 ## Completed Features
 
+- [x] (2026-11-05) Tracked Google Maps lists manager & resolver resilience:
+  - [x] (2026-11-04) Code implemented: `TrackedListsDialog.tsx`, cloud sync functions (`fetchTrackedSources`, `deleteTrackedSource`, `addTrackedSource`), contextual headers and jittered backoff in `gmaps-core.ts`
+  - [x] (2026-11-04) Unit and integration test suite passing (7 tests in `gmaps-retries.test.ts`, `gmaps-sync-plan.test.ts`, and `tracked-sources.test.ts`)
+  - [x] (2026-11-05) Live browser end-to-end verification passed (17-place shared list import, tracking registration, multi-device sync)
 - [x] (2026-11-04) Display-only preview URL truncation threshold adjusted to 60 characters (manual commits: `truncateForDisplay` default in `src/lib/restaurants.ts`, wired into `src/components/ImportPreview.tsx`)
 - [x] (2026-11-03) Importer reliability & deduplication (Batch 1 — verified live in browser):
   - [x] (2026-11-03) Display-only URL truncation to 80 characters with trailing ellipses in preview
