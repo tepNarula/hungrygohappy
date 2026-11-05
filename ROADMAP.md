@@ -25,6 +25,7 @@
   - [ ] Sun/Moon theme switcher toggle button at top-left of every page
   - [ ] Desktop/Mobile viewport frame toggle button next to theme switcher
 - [ ] (2026-11-02) "Review before adding" dialog polish:
+  - [ ] Add unit tests in `src/test/place-name.test.ts` validating `truncateForDisplay()` (60-character default threshold, trailing ellipsis, short-URL pass-through, custom `max` override)
   - [ ] Allow dialog width to scale up to 90% of the viewport (`max-w-[90vw]`) to maximize content visibility
   - [ ] Stack primary "Add {N}" button vertically on top of "Cancel" button
   - [ ] Support multi-line word-wrapping for reviewed place names
@@ -59,6 +60,7 @@
 
 ## Completed Features
 
+- [x] (2026-11-04) Display-only preview URL truncation threshold adjusted to 60 characters (manual commits: `truncateForDisplay` default in `src/lib/restaurants.ts`, wired into `src/components/ImportPreview.tsx`)
 - [x] (2026-11-03) Importer reliability & deduplication (Batch 1 — verified live in browser):
   - [x] (2026-11-03) Display-only URL truncation to 80 characters with trailing ellipses in preview
   - [x] (2026-11-03) Custom-name-safe sync planner (`planGmapsSync` protecting user-renamed places)
