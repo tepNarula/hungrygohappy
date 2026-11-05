@@ -25,6 +25,7 @@
   - [ ] Sun/Moon theme switcher toggle button at top-left of every page
   - [ ] Desktop/Mobile viewport frame toggle button next to theme switcher
 - [ ] (2026-11-02) "Review before adding" dialog polish:
+  - [ ] Add unit tests in `src/test/place-name.test.ts` validating `truncateForDisplay()` (60-character default threshold, trailing ellipsis, short-URL pass-through, custom `max` override)
   - [ ] Allow dialog width to scale up to 90% of the viewport (`max-w-[90vw]`) to maximize content visibility
   - [ ] Stack primary "Add {N}" button vertically on top of "Cancel" button
   - [ ] Support multi-line word-wrapping for reviewed place names
