@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { normalizeListCode, uniqueRestaurants, type Restaurant } from "@/lib/restaurants";
+import { locationColumns, normalizeListCode, uniqueRestaurants, type Restaurant } from "@/lib/restaurants";
 import { planGmapsSync } from "@/lib/gmaps-sync-plan";
 
 type Row = {
@@ -12,7 +12,15 @@ type Row = {
   gmaps_name: string | null;
   source_list_id: string | null;
   gmaps_place_id: string | null;
+  // Location metadata parsed from the Google address (used by the pre-spin filter).
+  city: string | null;
+  province: string | null;
+  postal_code: string | null;
+  country: string | null;
 };
+
+/** Columns read for every list fetch; kept in one place so all readers stay in sync. */
+const ROW_COLUMNS = "list_code, google_maps_url, name, visits, last_visited_at, visit_dates, gmaps_name, source_list_id, gmaps_place_id, city, province, postal_code, country";
 
 function toRow(list: string, r: Restaurant) {
   return {
@@ -25,6 +33,8 @@ function toRow(list: string, r: Restaurant) {
     ...(r.gmapsName !== undefined ? { gmaps_name: r.gmapsName } : {}),
     ...(r.sourceListId !== undefined ? { source_list_id: r.sourceListId } : {}),
     ...(r.placeId !== undefined ? { gmaps_place_id: r.placeId } : {}),
+    // Spread only known location parts so an upsert never erases existing metadata.
+    ...locationColumns(r),
   };
 }
 
@@ -39,6 +49,10 @@ function fromRow(row: Row): Restaurant {
     gmapsName: row.gmaps_name ?? undefined,
     sourceListId: row.source_list_id ?? undefined,
     placeId: row.gmaps_place_id ?? undefined,
+    city: row.city ?? undefined,
+    province: row.province ?? undefined,
+    postalCode: row.postal_code ?? undefined,
+    country: row.country ?? undefined,
     visits: row.visits || undefined,
     lastVisitedAt: row.last_visited_at ?? undefined,
     visitDates: dates.length ? dates : undefined,
@@ -48,7 +62,7 @@ function fromRow(row: Row): Restaurant {
 export async function fetchCloudList(list: string): Promise<Restaurant[]> {
   const { data, error } = await supabase
     .from("restaurants")
-    .select("list_code, google_maps_url, name, visits, last_visited_at, visit_dates, gmaps_name, source_list_id, gmaps_place_id")
+    .select(ROW_COLUMNS)
     .eq("list_code", normalizeListCode(list))
     .order("created_at", { ascending: true });
   if (error) throw error;
@@ -157,7 +171,7 @@ export async function syncResolvedSource(list: string, sourceId: string, candida
   for (const r of updates) {
     const before = existing.find((x) => x.id === r.id);
     if (!before) continue;
-    let query = supabase.from("restaurants").update({ name: r.name ?? null, gmaps_name: r.gmapsName ?? null, source_list_id: sourceId, gmaps_place_id: r.placeId ?? null })
+    let query = supabase.from("restaurants").update({ name: r.name ?? null, gmaps_name: r.gmapsName ?? null, source_list_id: sourceId, gmaps_place_id: r.placeId ?? null, ...locationColumns(r) })
       .eq("list_code", normalizeListCode(list)).eq("google_maps_url", r.googleMapsUrl);
     query = before.name == null ? query.is("name", null) : query.eq("name", before.name);
     const { error } = await query;

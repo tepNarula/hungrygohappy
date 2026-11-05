@@ -56,6 +56,20 @@ export function matchesLocation(r: Restaurant, filter: string): boolean {
   return [r.city, r.province, r.postalCode, r.country].some((v) => v?.toLowerCase().includes(q));
 }
 
+/**
+ * Map location fields to database column names. Only defined fields are included so a
+ * partial update (e.g. a place whose address Google omitted) never blanks stored values.
+ */
+export function locationColumns(r: PlaceMeta): { city?: string; province?: string; postal_code?: string; country?: string } {
+  const out: { city?: string; province?: string; postal_code?: string; country?: string } = {};
+  if (r.city) out.city = r.city; // City / district segment of the address.
+  if (r.province) out.province = r.province; // Province / state segment.
+  if (r.postalCode) out.postal_code = r.postalCode; // Postal or ZIP code.
+  if (r.country) out.country = r.country; // Country, when Google includes it.
+  return out;
+}
+
+/** Human-readable "City, Province, Postal, Country" label (skips unknown parts). */
 export function locationLabel(r: Restaurant): string {
   return [r.city, r.province, r.postalCode, r.country].filter(Boolean).join(", ");
 }
