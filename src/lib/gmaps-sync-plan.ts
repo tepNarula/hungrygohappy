@@ -12,7 +12,11 @@ export function planGmapsSync(existing: Restaurant[], candidates: Restaurant[], 
     const googleName = formatPlaceName(p.name ?? "");
     // Without a known baseline, preserve a nonempty existing name rather than guess ownership.
     const canRename = !row.name || (row.gmapsName !== undefined && row.name === row.gmapsName);
-    updates.push({ ...row, name: canRename ? googleName : row.name, gmapsName: googleName, sourceListId: sourceId, placeId: p.placeId ?? row.placeId });
+    // Location metadata is Google-owned: take fresh values, keep old ones when Google omits them.
+    updates.push({
+      ...row, name: canRename ? googleName : row.name, gmapsName: googleName, sourceListId: sourceId, placeId: p.placeId ?? row.placeId,
+      city: p.city ?? row.city, province: p.province ?? row.province, postalCode: p.postalCode ?? row.postalCode, country: p.country ?? row.country,
+    });
   }
   const added = uniqueRestaurants(candidates, existing).map((r) => ({ ...r, name: formatPlaceName(r.name ?? ""), gmapsName: formatPlaceName(r.name ?? ""), sourceListId: sourceId }));
   return { added, updates };
