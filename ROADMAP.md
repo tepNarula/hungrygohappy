@@ -9,12 +9,11 @@
 
 ## Pending Features & Enhancements
 
-- [ ] (2026-11-02) Location metadata & spin filtering:
-  - [ ] Fetch, extract, and sync city, province, postal code, and country during import
+- [ ] (2026-11-02) Location metadata & spin filtering (UI):
   - [ ] Pre-spin screen: Location filter input widget positioned below Live Match Counter and Quick Suggestion Chips
   - [ ] Spin result screen: Display location metadata under place name
-- [ ] (2026-11-02) Real-time opening schedule & status badges:
-  - [ ] Check place opening hours against client device's local time
+- [ ] (2026-11-02) Real-time opening schedule & status badges (UI):
+  - [ ] Check place opening hours against client device's local time (via `getPlaceHours` server function)
   - [ ] Display status badge: Currently open (upcoming closing time), Opening soon (within 60m), Closing soon (within 60m), or Currently closed (next opening day & time / temporarily / permanently closed)
   - [ ] Result screen button layout: Place "Back to Roulette" button to the left of "Let's Go!" button
 - [ ] (2026-11-02) Dedicated "All Restaurants" full page:
@@ -41,20 +40,24 @@
 
 ## Partially Implemented / Unverified
 
+- [ ] (2026-11-05) Location metadata & place opening hours backend pipeline:
+  - [x] (2026-11-02) Database columns (`city`, `province`, `postal_code`, `country`, `gmaps_place_id`) and `src/lib/opening-hours.ts` added to codebase
+  - [x] (2026-11-05) Location parsing and persistence wired through `resolveGmapsLink`, `syncResolvedSource`, `fetchCloudList`, and `refresh-gmaps-lists`
+  - [x] (2026-11-05) `getPlaceHours` server function implemented in `src/lib/gmaps-resolver.functions.ts`
+  - [ ] End-to-end verification of location persistence and server-side hours lookup
+  - [ ] Wire location filter and opening status badges into RoulettePage UI
 - [ ] (2026-11-04) Tracked Google Maps lists manager & resolver resilience:
   - [x] (2026-11-04) Code implemented: `TrackedListsDialog.tsx`, cloud sync functions (`fetchTrackedSources`, `deleteTrackedSource`, `addTrackedSource`), contextual headers and jittered backoff in `gmaps-core.ts`
   - [x] (2026-11-04) Unit and integration test suite passing (7 tests in `gmaps-retries.test.ts`, `gmaps-sync-plan.test.ts`, and `tracked-sources.test.ts`)
   - [ ] End-to-end live browser verification with live Google Maps shared lists and sync workflows
 - [ ] (2026-11-03) Prebuild chatlog records in `/dev-logs`:
   - [x] (2026-11-03) Created `dev-logs/20261103-112700_ICT_prebuild_chatlog.md`
+  - [x] (2026-11-05) Created `dev-logs/20261105-140834_ICT_prebuild_chatlog.md`
   - [ ] Reconstruct historical prebuild chatlogs for earlier builds in `/dev-logs`
-  - [ ] Log prebuild chat transcript for the 2026-11-04 build turn
+  - [ ] Log prebuild chat transcript for the 2026-11-05 (07:15 UTC) build turn
 - [ ] (2026-11-03) Comprehensive educational code documentation:
-  - [x] Explanatory comments added to new test and utility files
+  - [x] Explanatory comments added to new test and utility files (including `cloud-sync`, `gmaps-resolver`, `gmaps-sync-plan`, `restaurants`, `refresh-gmaps-lists`)
   - [ ] Retrofit educational docstrings and control-flow explanations across all pre-existing source files
-- [ ] (2026-11-02) Database foundation for location fields & place opening hours parser:
-  - [x] (2026-11-02) Database columns (`city`, `province`, `postal_code`, `country`, `gmaps_place_id`) and `src/lib/opening-hours.ts` added to codebase
-  - [ ] Wire location extraction into import flow, UI candidate filter, and opening status badges
 
 ---
 
