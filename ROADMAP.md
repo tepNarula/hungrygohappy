@@ -60,6 +60,7 @@
 
 ## Completed Features
 
+- [x] (2026-11-04) Display-only preview URL truncation threshold adjusted to 60 characters (manual commits: `truncateForDisplay` default in `src/lib/restaurants.ts`, wired into `src/components/ImportPreview.tsx`)
 - [x] (2026-11-03) Importer reliability & deduplication (Batch 1 — verified live in browser):
   - [x] (2026-11-03) Display-only URL truncation to 80 characters with trailing ellipses in preview
   - [x] (2026-11-03) Custom-name-safe sync planner (`planGmapsSync` protecting user-renamed places)
