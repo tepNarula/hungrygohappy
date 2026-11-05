@@ -17,7 +17,7 @@
   and listed the tracked-lists manager as uncompleted. The full corrected
   `ROADMAP.md` text was output in chat for direct commit to GitHub.
 - **Roadmap structure change:** The user requested a new section,
-  **"Partialy Implemented / Unverified"**, positioned between
+  **"Partially Implemented / Unverified"**, positioned between
   "Pending Features & Enhancements" and "Completed Features". This is now the
   standing four-section order: Security → Pending Features → Partially
   Implemented / Unverified → Completed, each in reverse chronological order.
