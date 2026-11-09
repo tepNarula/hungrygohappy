@@ -63,6 +63,12 @@
 
 ## Completed Features
 
+- [x] (2026-11-09) Prebuild chatlog records in `/dev-logs`:
+  - [x] (2026-11-09) Reconstructed, clearly labeled historical chatlogs for all earlier builds (2026-10-14, 10-15, 10-16, 10-19, 10-20, 10-22, 10-26, 11-02, 11-04, 11-05 14:15 ICT)
+  - [x] (2026-11-09) Created `dev-logs/20261109-145400_ICT_prebuild_chatlog.md` and `dev-logs/20261109-150100_ICT_prebuild_chatlog.md`
+  - [x] (2026-11-05) Created `dev-logs/20261105-140834_ICT_prebuild_chatlog.md`
+  - [x] (2026-11-03) Created `dev-logs/20261103-112700_ICT_prebuild_chatlog.md`
+
 - [x] (2026-11-05) Tracked Google Maps lists manager & resolver resilience:
   - [x] (2026-11-04) Code implemented: `TrackedListsDialog.tsx`, cloud sync functions (`fetchTrackedSources`, `deleteTrackedSource`, `addTrackedSource`), contextual headers and jittered backoff in `gmaps-core.ts`
   - [x] (2026-11-04) Unit and integration test suite passing (7 tests in `gmaps-retries.test.ts`, `gmaps-sync-plan.test.ts`, and `tracked-sources.test.ts`)
