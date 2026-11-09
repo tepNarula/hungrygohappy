@@ -1,5 +1,18 @@
 # Roadmap
 
+## Partially Implemented / Unverified
+
+- [ ] (2026-11-09) Location metadata & place opening hours pipeline:
+  - [x] (2026-11-09) Pre-spin location filter (match counter, city/province chips, text input) limits spin candidates — verified in browser (217 → 12 for "bangkok")
+  - [x] (2026-11-09) Result screen shows location under the name and an opening-status badge; "Back to Roulette" left of "Let's Go!" — verified in browser
+  - [x] (2026-11-09) Unit tests `src/test/location-filter.test.ts` (6 tests)
+  - [ ] Opening hours lookup returned "Hours unlisted" for the tested place; verify `getPlaceHours` actually extracts hours from Google
+- [ ] (2026-11-03) Comprehensive educational code documentation:
+  - [x] Explanatory comments added to new test and utility files (including `cloud-sync`, `gmaps-resolver`, `gmaps-sync-plan`, `restaurants`, `refresh-gmaps-lists`, `location-filter`)
+  - [ ] Retrofit educational docstrings and control-flow explanations across all pre-existing source files
+
+---
+
 ## Pending Security Issues Found by Lovable Scanner
 
 - [ ] (2026-11-03) [Critical] Anyone can delete any record in `gmaps_list_sources` (`RLS_EXPOSURE`). Unresolved: user explicitly chose to keep group-link deletion on 2026-11-03.
@@ -39,19 +52,6 @@
 - [ ] (2026-11-02) Development Roadmap & Releases History page:
   - [ ] Add "Development Roadmap & Releases History" link at the bottom of the Gear menu drawer
   - [ ] Dedicated `/roadmap` page displaying HTML-rendered view of `ROADMAP.md` with return navigation
-
----
-
-## Partially Implemented / Unverified
-
-- [ ] (2026-11-09) Location metadata & place opening hours pipeline:
-  - [x] (2026-11-09) Pre-spin location filter (match counter, city/province chips, text input) limits spin candidates — verified in browser (217 → 12 for "bangkok")
-  - [x] (2026-11-09) Result screen shows location under the name and an opening-status badge; "Back to Roulette" left of "Let's Go!" — verified in browser
-  - [x] (2026-11-09) Unit tests `src/test/location-filter.test.ts` (6 tests)
-  - [ ] Opening hours lookup returned "Hours unlisted" for the tested place; verify `getPlaceHours` actually extracts hours from Google
-- [ ] (2026-11-03) Comprehensive educational code documentation:
-  - [x] Explanatory comments added to new test and utility files (including `cloud-sync`, `gmaps-resolver`, `gmaps-sync-plan`, `restaurants`, `refresh-gmaps-lists`, `location-filter`)
-  - [ ] Retrofit educational docstrings and control-flow explanations across all pre-existing source files
 
 ---
 
