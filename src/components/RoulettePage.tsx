@@ -14,6 +14,10 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Check, List, ListRestart, Pencil, Plus, Share2 } from "lucide-react";
 import { ShareDialog } from "@/components/ShareDialog";
 import { fetchCloudList, pushDiff, subscribeList, syncWithLocal } from "@/lib/cloud-sync";
+// Location filter helpers (pure, unit-tested) and opening-hours status logic.
+import { filterByLocation, locationLabel, locationSuggestions } from "@/lib/location-filter";
+import { computeOpenStatus, describeStatus, type OpenStatus } from "@/lib/opening-hours";
+import { getPlaceHours } from "@/lib/gmaps-resolver.functions";
 
 export function RoulettePage({ list, initialView }: { list: string; initialView?: string | undefined }) {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
@@ -64,10 +68,27 @@ export function RoulettePage({ list, initialView }: { list: string; initialView?
     setRecorded(false);
   };
 
+  // Optional location filter typed before spinning; candidates = matching places only.
+  const [locationQuery, setLocationQuery] = useState("");
+  const candidates = useMemo(() => filterByLocation(restaurants, locationQuery), [restaurants, locationQuery]);
+  const suggestions = useMemo(() => locationSuggestions(restaurants), [restaurants]);
+
+  // Opening status for the picked place: fetched once spinning stops, computed against local device time.
+  const [openStatus, setOpenStatus] = useState<OpenStatus | "loading" | null>(null);
+  useEffect(() => {
+    if (!picked || spinning || !picked.googleMapsUrl) { setOpenStatus(null); return; }
+    let cancelled = false; // Ignore late answers after the user re-spins.
+    setOpenStatus("loading");
+    getPlaceHours({ data: { url: picked.googleMapsUrl, placeId: picked.placeId } })
+      .then((hours) => { if (!cancelled) setOpenStatus(computeOpenStatus(hours)); })
+      .catch(() => { if (!cancelled) setOpenStatus({ kind: "unlisted" }); });
+    return () => { cancelled = true; };
+  }, [picked, spinning]);
+
   const spin = () => {
-    if (restaurants.length === 0 || spinning) return;
+    if (candidates.length === 0 || spinning) return;
     const randomOne = () =>
-      restaurants[Math.floor(Math.random() * restaurants.length)] ?? null;
+      candidates[Math.floor(Math.random() * candidates.length)] ?? null;
     setSpinning(true);
     setRecorded(false);
     setPicked(null);
@@ -115,6 +136,14 @@ export function RoulettePage({ list, initialView }: { list: string; initialView?
           <h1 className="font-display text-5xl font-bold leading-tight text-foreground">
             {displayName(picked)}
           </h1>
+          {/* Location metadata under the name, when known. */}
+          {locationLabel(picked) && <p className="mt-2 text-sm text-muted-foreground">{locationLabel(picked)}</p>}
+          {/* Opening status badge; green-ish tone for open, muted otherwise. */}
+          {openStatus && (
+            <span className={`mt-3 rounded-full px-3 py-1 text-xs font-medium ${openStatus !== "loading" && (openStatus.kind === "open") ? "bg-primary text-primary-foreground" : openStatus !== "loading" && (openStatus.kind === "closing_soon" || openStatus.kind === "opening_soon") ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground"}`}>
+              {openStatus === "loading" ? "Checking hours…" : describeStatus(openStatus)}
+            </span>
+          )}
           <iframe
             title={`Map of ${displayName(picked)}`}
             src={embedUrlFor(picked)}
@@ -123,6 +152,15 @@ export function RoulettePage({ list, initialView }: { list: string; initialView?
             className="mt-6 h-64 w-full rounded-2xl border shadow-md"
           />
           <div className="mt-8 flex items-center gap-4">
+            {/* Back to Roulette sits left of Let's Go! and returns to the start view. */}
+            <button
+              onClick={reset}
+              aria-label="Back to Roulette"
+              title="Back to Roulette"
+              className="flex h-15 w-15 items-center justify-center rounded-full bg-card text-foreground shadow-md"
+            >
+              <ArrowLeft />
+            </button>
             <button
               onClick={letsGo}
               disabled={recorded}
@@ -140,13 +178,38 @@ export function RoulettePage({ list, initialView }: { list: string; initialView?
           </div>
         </div>
       ) : (
+        <div className="flex w-full max-w-xl flex-col items-center">
         <Button
           onClick={spin}
-          disabled={restaurants.length === 0}
+          disabled={candidates.length === 0}
           className="btn-chunky h-auto max-w-full whitespace-normal rounded-3xl bg-primary px-10 py-8 font-display text-3xl font-semibold leading-snug text-primary-foreground disabled:opacity-50"
         >
           {spinning ? (picked ? displayName(picked) : "…") : "Where To Eat/Drink Today?"}
         </Button>
+        {/* Pre-spin location filter: match counter, quick chips, then the input. Hidden while spinning. */}
+        {!spinning && restaurants.length > 0 && (
+          <div className="mt-6 flex w-full max-w-sm flex-col items-center gap-3">
+            <p className="text-sm text-muted-foreground">{candidates.length} of {restaurants.length} places match</p>
+            {suggestions.length > 0 && (
+              <div className="flex flex-wrap justify-center gap-2">
+                {suggestions.map((s) => (
+                  <button key={s} onClick={() => setLocationQuery(locationQuery === s ? "" : s)} aria-pressed={locationQuery === s}
+                    className={`rounded-full border px-3 py-1 text-xs ${locationQuery === s ? "border-primary bg-primary text-primary-foreground" : "border-input bg-card text-foreground"}`}>
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
+            <input
+              value={locationQuery}
+              onChange={(e) => setLocationQuery(e.target.value)}
+              placeholder="Limit to city, province, postal code or country"
+              aria-label="Location filter"
+              className="w-full rounded-xl border border-input bg-card px-4 py-2 text-sm text-foreground"
+            />
+          </div>
+        )}
+        </div>
       )}
 
       {restaurants.length === 0 && (

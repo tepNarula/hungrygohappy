@@ -20,13 +20,6 @@
   - [ ] Fix Tracked Lists Dialog UI state lag when refreshing individual source (local React state does not immediately reflect updated timestamp without closing/reopening)
   - [ ] Expose extracted location details in the Import Preview dialog (display parsed city/province/country alongside name and URL)
   - [ ] Support country inference in `parseAddress()` when Google Maps address omits country token (e.g. Bangkok addresses with postal code `10xxx` infer Thailand)
-- [ ] (2026-11-02) Location metadata & spin filtering (UI):
-  - [ ] Pre-spin screen: Location filter input widget positioned below Live Match Counter and Quick Suggestion Chips
-  - [ ] Spin result screen: Display location metadata under place name
-- [ ] (2026-11-02) Real-time opening schedule & status badges (UI):
-  - [ ] Check place opening hours against client device's local time (via `getPlaceHours` server function)
-  - [ ] Display status badge: Currently open (upcoming closing time), Opening soon (within 60m), Closing soon (within 60m), or Currently closed (next opening day & time / temporarily / permanently closed)
-  - [ ] Result screen button layout: Place "Back to Roulette" button to the left of "Let's Go!" button
 - [ ] (2026-11-02) Dedicated "All Restaurants" full page:
   - [ ] Move from slide-out Gear drawer to dedicated full-page route (`/{list}/places`)
   - [ ] Include back navigation, sorting, and inline editing/deletion
@@ -51,12 +44,11 @@
 
 ## Partially Implemented / Unverified
 
-- [ ] (2026-11-05) Location metadata & place opening hours backend pipeline:
-  - [x] (2026-11-02) Database columns (`city`, `province`, `postal_code`, `country`, `gmaps_place_id`) and `src/lib/opening-hours.ts` added to codebase
-  - [x] (2026-11-05) Location parsing and persistence wired through `resolveGmapsLink`, `syncResolvedSource`, `fetchCloudList`, and `refresh-gmaps-lists`
-  - [x] (2026-11-05) `getPlaceHours` server function implemented in `src/lib/gmaps-resolver.functions.ts`
-  - [x] (2026-11-05) Live browser test verified: cross-device location persistence and sync functioning
-  - [ ] Wire location filter and opening status badges into RoulettePage UI
+- [ ] (2026-11-09) Location metadata & place opening hours pipeline:
+  - [x] (2026-11-09) Pre-spin location filter (match counter, city/province chips, text input) limits spin candidates — verified in browser (217 → 12 for "bangkok")
+  - [x] (2026-11-09) Result screen shows location under the name and an opening-status badge; "Back to Roulette" left of "Let's Go!" — verified in browser
+  - [x] (2026-11-09) Unit tests `src/test/location-filter.test.ts` (6 tests)
+  - [ ] Opening hours lookup returned "Hours unlisted" for the tested place; verify `getPlaceHours` actually extracts hours from Google
 - [ ] (2026-11-03) Prebuild chatlog records in `/dev-logs`:
   - [x] (2026-11-03) Created `dev-logs/20261103-112700_ICT_prebuild_chatlog.md`
   - [x] (2026-11-05) Created `dev-logs/20261105-140834_ICT_prebuild_chatlog.md`
