@@ -49,12 +49,6 @@
   - [x] (2026-11-09) Result screen shows location under the name and an opening-status badge; "Back to Roulette" left of "Let's Go!" — verified in browser
   - [x] (2026-11-09) Unit tests `src/test/location-filter.test.ts` (6 tests)
   - [ ] Opening hours lookup returned "Hours unlisted" for the tested place; verify `getPlaceHours` actually extracts hours from Google
-- [ ] (2026-11-03) Prebuild chatlog records in `/dev-logs`:
-  - [x] (2026-11-09) Created `dev-logs/20261109-145400_ICT_prebuild_chatlog.md`
-  - [x] (2026-11-05) Created `dev-logs/20261105-140834_ICT_prebuild_chatlog.md`
-  - [x] (2026-11-03) Created `dev-logs/20261103-112700_ICT_prebuild_chatlog.md`
-  - [ ] Reconstruct historical prebuild chatlogs for earlier builds in `/dev-logs`
-  - [ ] Log prebuild chat transcript for the 2026-11-05 (07:15 UTC) build turn
 - [ ] (2026-11-03) Comprehensive educational code documentation:
   - [x] Explanatory comments added to new test and utility files (including `cloud-sync`, `gmaps-resolver`, `gmaps-sync-plan`, `restaurants`, `refresh-gmaps-lists`, `location-filter`)
   - [ ] Retrofit educational docstrings and control-flow explanations across all pre-existing source files
@@ -62,6 +56,12 @@
 ---
 
 ## Completed Features
+
+- [x] (2026-11-09) Prebuild chatlog records in `/dev-logs`:
+  - [x] (2026-11-09) Reconstructed, clearly labeled historical chatlogs for all earlier builds (2026-10-14, 10-15, 10-16, 10-19, 10-20, 10-22, 10-26, 11-02, 11-04, 11-05 14:15 ICT)
+  - [x] (2026-11-09) Created `dev-logs/20261109-145400_ICT_prebuild_chatlog.md` and `dev-logs/20261109-150100_ICT_prebuild_chatlog.md`
+  - [x] (2026-11-05) Created `dev-logs/20261105-140834_ICT_prebuild_chatlog.md`
+  - [x] (2026-11-03) Created `dev-logs/20261103-112700_ICT_prebuild_chatlog.md`
 
 - [x] (2026-11-05) Tracked Google Maps lists manager & resolver resilience:
   - [x] (2026-11-04) Code implemented: `TrackedListsDialog.tsx`, cloud sync functions (`fetchTrackedSources`, `deleteTrackedSource`, `addTrackedSource`), contextual headers and jittered backoff in `gmaps-core.ts`
