@@ -22,6 +22,8 @@
 
 ## Pending Fixes, Features, and Enhancements
 
+- [ ] (2026-11-09) List share URL QR code display:
+  - [ ] Display the list's full shareable URL as a scannable QR code on the Share dialog so users can quickly share the list in person with nearby smartphone users
 - [ ] (2026-11-05) Test suite documentation (`/src/test/README.md`):
   - [ ] Maintain a markdown document `/src/test/README.md` describing the purposes, coverage, and design of all source files under the `/src/test/` directory
 - [ ] (2026-11-05) Test suite inventory & test scripts directory structure:
@@ -50,7 +52,7 @@
   - [ ] Reference and link `SCHEMA.md` from `README.md`
   - [ ] Maintain an inventory of all software-library & cloud-service dependencies in `README.md`
 - [ ] (2026-11-02) Development Roadmap & Releases History page:
-  - [ ] Add "Development Roadmap & Releases History" link at the bottom of the Gear menu drawer
+  - [x] Add "Development Roadmap & Releases History" link at the bottom of the Gear menu drawer
   - [ ] Dedicated `/roadmap` page displaying HTML-rendered view of `ROADMAP.md` with return navigation
 
 ---
