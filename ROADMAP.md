@@ -7,7 +7,7 @@
   - [x] (2026-11-09) Result screen shows location under the name and an opening-status badge; "Back to Roulette" left of "Let's Go!" — verified in browser
   - [x] (2026-11-09) Unit tests `src/test/location-filter.test.ts` (6 tests)
   - [x] (2026-11-10) Fixed signed 64-bit Google place-ID conversion with `BigInt.asUintN`; legacy signed-hex IDs are normalized at lookup so existing rows need no migration
-  - [x] (2026-11-10) Added `src/test/gmaps-place-id.test.ts` (3 regression tests); full suite passes 24 tests across 8 files
+  - [x] (2026-11-10) Added `src/test/gmaps-place-id.test.ts` (3 regression tests); full suite passes 28 tests across 8 files
   - [ ] Live opening-hours badge remains unverified: the fixed legacy ID initially returned 7 days of hours in a direct helper check, but the app server receives Google HTTP 403 anti-abuse responses and the browser still shows "Hours unlisted"
 - [ ] (2026-11-03) Comprehensive educational code documentation:
   - [x] Explanatory comments added to new test and utility files (including `cloud-sync`, `gmaps-resolver`, `gmaps-sync-plan`, `restaurants`, `refresh-gmaps-lists`, `location-filter`)
@@ -19,15 +19,17 @@
 
 - [ ] (2026-11-03) [Critical] Anyone can delete any record in `gmaps_list_sources` (`RLS_EXPOSURE`). Unresolved: user explicitly chose to keep group-link deletion on 2026-11-03.
 - [ ] (2026-11-03) [Warning] Anyone can delete any record in `restaurants` (`RLS_EXPOSURE`). Unresolved: user explicitly chose to keep group-link deletion on 2026-11-03.
+- [ ] (2026-10-26) [Warning] Anyone can place spreadsheet formulas in shared-list downloads (`INPUT_VALIDATION`). Code remediation implemented on 2026-11-03 (`safeSpreadsheetText` prepending `'`); finding remains active in scanner awaiting deep security scan refresh.
 
 ---
 
 ## Pending Fixes, Features, and Enhancements
 
 - [ ] (2026-11-10) Flet companion Python application:
-  - [ ] Maintain an up-to-date, functional, complete, and completely documented Flet-based companion Python application source (`/python-src/main.py`)
+  - [x] (2026-11-10) Maintain an up-to-date, functional, complete, and completely documented Flet-based companion Python application source (`/python-src/main.py`)
+  - [x] (2026-11-10) Maintain `/python-src/README.md` containing complete documentation for Software Architecture, Prerequisites, Build Instructions, and Dependency Inventory
+  - [x] (2026-11-10) Maintain runtime dependency manifest (`/python-src/requirements.txt`)
   - [ ] Maintain an up-to-date, functional, complete, comprehensive, and completely documented unit and regression test suite (`/python-src/test/`)
-  - [ ] Maintain `/python-src/README.md` containing complete documentation for Software Architecture, Prerequisites, Build Instructions, and Dependency Inventory
 - [ ] (2026-11-09) List share URL QR code display:
   - [ ] Display the list's full shareable URL as a scannable QR code on the Share dialog so users can quickly share the list in person with nearby smartphone users
 - [ ] (2026-11-05) Test suite inventory & test scripts directory structure:
@@ -47,7 +49,7 @@
   - [ ] Sun/Moon theme switcher toggle button at top-left of every page
   - [ ] Desktop/Mobile viewport frame toggle button next to theme switcher
 - [ ] (2026-11-02) "Review before adding" dialog polish:
-  - [ ] Add unit tests in `src/test/place-name.test.ts` validating `truncateForDisplay()` (60-character default threshold, trailing ellipsis, short-URL pass-through, custom `max` override)
+  - [x] (2026-11-10) Add unit tests in `src/test/place-name.test.ts` validating `truncateForDisplay()` (60-character default threshold, trailing ellipsis, short-URL pass-through, custom `max` override)
   - [ ] Allow dialog width to scale up to 90% of the viewport (`max-w-[90vw]`) to maximize content visibility
   - [ ] Stack primary "Add {N}" button vertically on top of "Cancel" button
   - [ ] Support multi-line word-wrapping for reviewed place names
@@ -59,6 +61,8 @@
 
 ## Completed Features
 
+- [x] (2026-11-10) Unit tests for `truncateForDisplay()` in `src/test/place-name.test.ts`:
+  - [x] (2026-11-10) Validated 60-character default threshold boundary check, string slicing + trailing ellipsis, custom threshold overrides, and empty string handling (all 28 tests passing across 8 suites)
 - [x] (2026-11-10) Test suite documentation (`/src/test/README.md`):
   - [x] (2026-11-10) Created `/src/test/README.md` documenting the directory structure, design principles, test suites, and automation scripts
 - [x] (2026-11-10) Database schema & dependency documentation:
