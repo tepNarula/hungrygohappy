@@ -24,6 +24,10 @@
 
 ## Pending Fixes, Features, and Enhancements
 
+- [ ] (2026-11-10) Flet companion Python application:
+  - [ ] Maintain an up-to-date, functional, complete, and completely documented Flet-based companion Python application source (`/python-src/main.py`)
+  - [ ] Maintain an up-to-date, functional, complete, comprehensive, and completely documented unit and regression test suite (`/python-src/test/`)
+  - [ ] Maintain `/python-src/README.md` containing complete documentation for Software Architecture, Prerequisites, Build Instructions, and Dependency Inventory
 - [ ] (2026-11-09) List share URL QR code display:
   - [ ] Display the list's full shareable URL as a scannable QR code on the Share dialog so users can quickly share the list in person with nearby smartphone users
 - [ ] (2026-11-05) Test suite inventory & test scripts directory structure:
