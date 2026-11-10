@@ -223,7 +223,8 @@ export async function fetchPlaceHours(url: string, placeId?: string): Promise<Pl
     console.error("place hours: no usable feature ID", { url, placeId });
     return null;
   }
-  const page = await politeFetch(`https://www.google.com/maps/place/data=!4m2!3m1!1s${id}?hl=en`);
+  // Maps rejects some data-center requests lacking the same-origin navigation context.
+  const page = await politeFetch(`https://www.google.com/maps/place/data=!4m2!3m1!1s${id}?hl=en`, { headers: LIST_HEADERS });
   if (!page.ok) {
     console.error("place hours: place page failed", { id, status: page.status });
     return null;
