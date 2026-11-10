@@ -237,13 +237,19 @@ export async function fetchPlaceHours(url: string, placeId?: string): Promise<Pl
     console.error("place hours: no usable feature ID", { url, placeId });
     return null;
   }
-  // Request the place-details payload directly; no intermediate HTML request is necessary.
-  const res = await politeFetch(placePreviewUrl(id), { headers: LIST_HEADERS });
-  if (!res.ok) {
-    // A short provider excerpt identifies whether this is throttling, consent or another block.
-    const detail = (await res.text()).slice(0, 300);
-    console.error("place hours: detail request failed", { id, status: res.status, detail });
-    return null;
+  // Try a small fixed set of Google edges; never turn this lookup into an open proxy.
+  for (const host of PLACE_DETAIL_HOSTS) {
+    try {
+      // Two attempts per host bound latency while allowing a transient provider failure to clear.
+      const res = await politeFetch(placePreviewUrl(id, host), { headers: LIST_HEADERS }, 2);
+      if (res.ok) return parsePlaceHours(await res.text());
+      // A short provider excerpt identifies whether this is throttling, consent or another block.
+      const detail = (await res.text()).slice(0, 300);
+      console.error("place hours: detail request failed", { id, host, status: res.status, detail });
+    } catch (error) {
+      // Rate limiting or a network failure on one edge should not prevent trying the next one.
+      console.error("place hours: detail host failed", { id, host, error });
+    }
   }
-  return parsePlaceHours(await res.text());
+  return null;
 }
