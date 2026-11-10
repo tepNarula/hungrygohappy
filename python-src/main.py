@@ -585,4 +585,3 @@ def main(page: ft.Page) -> None:
 if __name__ == "__main__":
     # Launch Flet native application
     ft.app(target=main)
-```
