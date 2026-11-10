@@ -49,10 +49,6 @@
   - [ ] Allow dialog width to scale up to 90% of the viewport (`max-w-[90vw]`) to maximize content visibility
   - [ ] Stack primary "Add {N}" button vertically on top of "Cancel" button
   - [ ] Support multi-line word-wrapping for reviewed place names
-- [ ] (2026-11-02) Database schema & dependency documentation:
-  - [ ] Create dedicated `SCHEMA.md` documenting tables, columns, constraints, and RLS policies
-  - [ ] Reference and link `SCHEMA.md` from `README.md`
-  - [ ] Maintain an inventory of all software-library & cloud-service dependencies in `README.md`
 - [ ] (2026-11-02) Development Roadmap & Releases History page:
   - [x] Add "Development Roadmap & Releases History" link at the bottom of the Gear menu drawer
   - [ ] Dedicated `/roadmap` page displaying HTML-rendered view of `ROADMAP.md` with return navigation
@@ -61,6 +57,10 @@
 
 ## Completed Features
 
+- [x] (2026-11-10) Database schema & dependency documentation:
+  - [x] (2026-11-10) Created dedicated `SCHEMA.md` documenting tables, columns, constraints, RLS policies, and sync logic
+  - [x] (2026-11-10) Referenced and linked `SCHEMA.md` from `README.md`
+  - [x] (2026-11-10) Added complete inventory of software-library & cloud-service dependencies in `README.md`
 - [x] (2026-11-10) Prebuild chatlog records in `/dev-logs`:
   - [x] (2026-11-10) Created `dev-logs/20261110-164300_ICT_prebuild_chatlog.md`
   - [x] (2026-11-09) Reconstructed, clearly labeled historical chatlogs for all earlier builds (2026-10-14, 10-15, 10-16, 10-19, 10-20, 10-22, 10-26, 11-02, 11-04, 11-05 14:15 ICT)
