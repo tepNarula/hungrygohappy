@@ -8,6 +8,8 @@ Built with [Lovable](https://lovable.dev).
 
 ___[Development Roadmap & Releases History](./ROADMAP.md)___
 
+___[Database Schema](./SCHEMA.md)___
+
 ---
 ## Architecture & Technology Stack
 
