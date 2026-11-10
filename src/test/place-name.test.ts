@@ -41,7 +41,7 @@ describe("truncateForDisplay", () => {
     expect(truncateForDisplay(shortUrl)).toBe(shortUrl);
 
     // Exactly 60 characters boundary check
-    const exact60Chars = "https://example.com/restaurants/list/subpath/item/exactly60ch";
+    const exact60Chars = "https://example.com/restaurants/list/subpath/item/exactly60c";
     expect(exact60Chars.length).toBe(60);
     expect(truncateForDisplay(exact60Chars)).toBe(exact60Chars);
   });
