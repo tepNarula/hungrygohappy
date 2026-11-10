@@ -26,8 +26,6 @@
 
 - [ ] (2026-11-09) List share URL QR code display:
   - [ ] Display the list's full shareable URL as a scannable QR code on the Share dialog so users can quickly share the list in person with nearby smartphone users
-- [ ] (2026-11-05) Test suite documentation (`/src/test/README.md`):
-  - [ ] Maintain a markdown document `/src/test/README.md` describing the purposes, coverage, and design of all source files under the `/src/test/` directory
 - [ ] (2026-11-05) Test suite inventory & test scripts directory structure:
   - [ ] Maintain an inventory of all unit tests and test-script source files (ever developed and used) in the repository under `/src/test/`
   - [ ] Move deprecated/obsolete test source files into subdirectory `/src/test/deprecated/`
@@ -57,6 +55,8 @@
 
 ## Completed Features
 
+- [x] (2026-11-10) Test suite documentation (`/src/test/README.md`):
+  - [x] (2026-11-10) Created `/src/test/README.md` documenting the directory structure, design principles, test suites, and automation scripts
 - [x] (2026-11-10) Database schema & dependency documentation:
   - [x] (2026-11-10) Created dedicated `SCHEMA.md` documenting tables, columns, constraints, RLS policies, and sync logic
   - [x] (2026-11-10) Referenced and linked `SCHEMA.md` from `README.md`
