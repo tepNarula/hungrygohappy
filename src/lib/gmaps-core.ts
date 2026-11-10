@@ -206,20 +206,6 @@ export function parsePlaceHours(text: string): PlaceHours {
   return { state: week.length ? state : state === "operational" ? "unknown" : state, week };
 }
 
-// Google's detail-request flags select the place card, weekly hours and related metadata.
-// A fixed viewport is sufficient because hours do not depend on the map's visible area.
-const PLACE_DETAILS_PB_TAIL = "!3m12!1m3!1d397983.7594632238!2d-106.54818695!3d38.803865599999995!2m3!1f0.0!2f0.0!3f0.0!3m2!1i1024!2i768!4f13.1!12m4!2m3!1i360!2i120!4i8!13m57!2m2!1i203!2i100!3m2!2i4!5b1!6m6!1m2!1i86!2i86!1m2!1i408!2i240!7m33!1m3!1e1!2b0!3e3!1m3!1e2!2b1!3e2!1m3!1e2!2b0!3e3!1m3!1e8!2b0!3e3!1m3!1e10!2b0!3e3!1m3!1e10!2b1!3e2!1m3!1e10!2b0!3e4!1m3!1e9!2b1!3e2!2b1!9b0!15m8!1m7!1m2!1m1!1e2!2m2!1i195!2i195!3i20!15i10112!15m108!1m26!13m9!2b1!3b1!4b1!6i1!8b1!9b1!14b1!20b1!25b1!18m15!3b1!4b1!5b1!6b1!13b1!14b1!17b1!21b1!22b1!30b1!32b1!33m1!1b1!34b1!36e2!10m1!8e3!11m1!3e1!17b1!20m2!1e3!1e6!24b1!25b1!26b1!27b1!29b1!30m1!2b1!36b1!37b1!39m3!2m2!2i1!3i1!43b1!52b1!54m1!1b1!55b1!56m1!1b1!61m2!1m1!1e1!65m5!3m4!1m3!1m2!1i224!2i298!72m22!1m8!2b1!5b1!7b1!12m4!1b1!2b1!4m1!1e1!4b1!8m10!1m6!4m1!1e1!4m1!1e3!4m1!1e4!3sother_user_google_review_posts__and__hotel_and_vr_partner_review_posts!6m1!1e1!9b1!89b1!90m2!1m1!1e2!98m3!1b1!2b1!3b1!103b1!113b1!114m3!1b1!2m1!1b1!117b1!122m1!1b1!126b1!127b1!128m1!1b1!21m0!22m1!1e81!30m8!3b1!6m2!1b1!2b1!7m2!1e3!2b1!9b1!34m5!7b1!10b1!14b1!15m1!1b0!37i803";
-
-// Fixed regional hosts provide bounded fallbacks when one Google edge blocks a server request.
-const PLACE_DETAIL_HOSTS = ["www.google.com", "www.google.co.th", "maps.google.com"] as const;
-
-/** Build the detail request directly, avoiding the place HTML page that Google may block. */
-function placePreviewUrl(id: string, host: string): string {
-  // URL-encoding keeps the feature ID and protobuf separators inside one safe query value.
-  const pb = encodeURIComponent(`!1m14!1s${id}${PLACE_DETAILS_PB_TAIL}`);
-  return `https://${host}/maps/preview/place?authuser=0&hl=en&gl=us&pb=${pb}`;
-}
-
 /** Look up a place's weekly hours via its Google feature id (found in list data or the place URL). */
 export async function fetchPlaceHours(url: string, placeId?: string): Promise<PlaceHours | null> {
   // Normalize stored IDs first so both fixed and legacy imports produce a valid Google request.
