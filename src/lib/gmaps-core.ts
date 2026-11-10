@@ -218,13 +218,26 @@ export async function fetchPlaceHours(url: string, placeId?: string): Promise<Pl
     id = normalizePlaceId(expanded.match(/!1s(0x[0-9a-f]+:0x[0-9a-f]+)/i)?.[1])
       ?? normalizePlaceId(expanded.match(/[?&]ftid=(0x[0-9a-f]+:0x[0-9a-f]+)/i)?.[1]);
   }
-  if (!id) return null;
+  if (!id) {
+    // Diagnostics distinguish an unusable stored ID from a provider-side response failure.
+    console.error("place hours: no usable feature ID", { url, placeId });
+    return null;
+  }
   const page = await politeFetch(`https://www.google.com/maps/place/data=!4m2!3m1!1s${id}?hl=en`);
-  if (!page.ok) return null;
+  if (!page.ok) {
+    console.error("place hours: place page failed", { id, status: page.status });
+    return null;
+  }
   const html = await page.text();
   const preview = html.match(/preview\/place\?[^"]+/)?.[0]?.replace(/&amp;/g, "&");
-  if (!preview) return null;
+  if (!preview) {
+    console.error("place hours: preview endpoint missing", { id, htmlLength: html.length });
+    return null;
+  }
   const res = await politeFetch(`https://www.google.com/maps/${preview}`);
-  if (!res.ok) return null;
+  if (!res.ok) {
+    console.error("place hours: preview request failed", { id, status: res.status });
+    return null;
+  }
   return parsePlaceHours(await res.text());
 }
