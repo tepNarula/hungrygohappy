@@ -30,4 +30,22 @@ describe("Google Maps place IDs", () => {
     expect(normalizePlaceId("not-a-place-id")).toBeUndefined();
     expect(normalizePlaceId(undefined)).toBeUndefined();
   });
+
+  it("requests place details directly with a normalized legacy ID", async () => {
+    // A minimal JSON payload keeps the network mock independent of Google's response fixture.
+    const fetchMock = vi.fn(async () => new Response("null", { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    // The search URL has no feature ID, forcing the lookup to use its legacy placeId argument.
+    await fetchPlaceHours(
+      "https://www.google.com/maps/search/?api=1&query=Backstreet%20House%20Pattaya",
+      "0x3102bf84957100fd:0x-1b2002beca532784",
+    );
+    // Exactly one direct detail request avoids the intermittently blocked place HTML page.
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const requestUrl = String(fetchMock.mock.calls[0]?.[0]);
+    expect(requestUrl).toContain("/maps/preview/place?");
+    expect(requestUrl).not.toContain("/maps/place/data=");
+    // Decoding the protobuf query confirms the canonical unsigned ID reached the request.
+    expect(decodeURIComponent(requestUrl)).toContain(CANONICAL_ID);
+  });
 });
