@@ -223,19 +223,23 @@ export async function fetchPlaceHours(url: string, placeId?: string): Promise<Pl
     console.error("place hours: no usable feature ID", { url, placeId });
     return null;
   }
-  // Try a small fixed set of Google edges; never turn this lookup into an open proxy.
-  for (const host of PLACE_DETAIL_HOSTS) {
-    try {
-      // Two attempts per host bound latency while allowing a transient provider failure to clear.
-      const res = await politeFetch(placePreviewUrl(id, host), { headers: LIST_HEADERS }, 2);
-      if (res.ok) return parsePlaceHours(await res.text());
-      // A short provider excerpt identifies whether this is throttling, consent or another block.
-      const detail = (await res.text()).slice(0, 300);
-      console.error("place hours: detail request failed", { id, host, status: res.status, detail });
-    } catch (error) {
-      // Rate limiting or a network failure on one edge should not prevent trying the next one.
-      console.error("place hours: detail host failed", { id, host, error });
-    }
+  // Fetch the compact place page, which contains the endpoint for the weekly-hours payload.
+  const page = await politeFetch(`https://www.google.com/maps/place/data=!4m2!3m1!1s${id}?hl=en`);
+  if (!page.ok) {
+    console.error("place hours: place page failed", { id, status: page.status });
+    return null;
   }
-  return null;
+  const html = await page.text();
+  // Google embeds a fully parameterized detail endpoint in the place page markup.
+  const preview = html.match(/preview\/place\?[^"]+/)?.[0]?.replace(/&amp;/g, "&");
+  if (!preview) {
+    console.error("place hours: preview endpoint missing", { id, htmlLength: html.length });
+    return null;
+  }
+  const res = await politeFetch(`https://www.google.com/maps/${preview}`);
+  if (!res.ok) {
+    console.error("place hours: preview request failed", { id, status: res.status });
+    return null;
+  }
+  return parsePlaceHours(await res.text());
 }
