@@ -1,6 +1,9 @@
 /** Regression coverage for Google's signed 64-bit place-ID representation. */
-import { describe, expect, it } from "vitest";
-import { normalizePlaceId, toHexId } from "@/lib/gmaps-core";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { fetchPlaceHours, normalizePlaceId, toHexId } from "@/lib/gmaps-core";
+
+/** Restore the global request mock after each isolated helper test. */
+afterEach(() => { vi.unstubAllGlobals(); });
 
 /** Canonical ID used by a real place whose low half has its sign bit set. */
 const CANONICAL_ID = "0x3102bf84957100fd:0xe4dffd4135acd87c";

@@ -234,21 +234,10 @@ export async function fetchPlaceHours(url: string, placeId?: string): Promise<Pl
     console.error("place hours: no usable feature ID", { url, placeId });
     return null;
   }
-  // Maps rejects some data-center requests lacking the same-origin navigation context.
-  const page = await politeFetch(`https://www.google.com/maps/place/data=!4m2!3m1!1s${id}?hl=en`, { headers: LIST_HEADERS });
-  if (!page.ok) {
-    console.error("place hours: place page failed", { id, status: page.status });
-    return null;
-  }
-  const html = await page.text();
-  const preview = html.match(/preview\/place\?[^"]+/)?.[0]?.replace(/&amp;/g, "&");
-  if (!preview) {
-    console.error("place hours: preview endpoint missing", { id, htmlLength: html.length });
-    return null;
-  }
-  const res = await politeFetch(`https://www.google.com/maps/${preview}`);
+  // Request the place-details payload directly; no intermediate HTML request is necessary.
+  const res = await politeFetch(placePreviewUrl(id), { headers: LIST_HEADERS });
   if (!res.ok) {
-    console.error("place hours: preview request failed", { id, status: res.status });
+    console.error("place hours: detail request failed", { id, status: res.status });
     return null;
   }
   return parsePlaceHours(await res.text());
