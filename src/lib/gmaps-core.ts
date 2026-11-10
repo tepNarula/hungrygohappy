@@ -237,7 +237,9 @@ export async function fetchPlaceHours(url: string, placeId?: string): Promise<Pl
   // Request the place-details payload directly; no intermediate HTML request is necessary.
   const res = await politeFetch(placePreviewUrl(id), { headers: LIST_HEADERS });
   if (!res.ok) {
-    console.error("place hours: detail request failed", { id, status: res.status });
+    // A short provider excerpt identifies whether this is throttling, consent or another block.
+    const detail = (await res.text()).slice(0, 300);
+    console.error("place hours: detail request failed", { id, status: res.status, detail });
     return null;
   }
   return parsePlaceHours(await res.text());
