@@ -61,11 +61,42 @@ export function extractListId(url: string): string | undefined {
 
 export interface ListPlace { url: string; name: string; address?: string | undefined; placeId?: string | undefined }
 
-function toHexId(pair: unknown): string | undefined {
+/**
+ * Convert Google's pair of signed 64-bit decimal integers into its canonical place ID.
+ * BigInt#toString preserves a minus sign, so explicitly reinterpreting each value as an
+ * unsigned 64-bit integer is essential for IDs whose highest bit is set.
+ */
+export function toHexId(pair: unknown): string | undefined {
+  // Google stores the two ID halves as a two-element array; ignore malformed payloads.
   if (!Array.isArray(pair) || pair.length < 2) return undefined;
   try {
-    return `0x${BigInt(String(pair[0])).toString(16)}:0x${BigInt(String(pair[1])).toString(16)}`;
+    // asUintN performs two's-complement wrapping instead of producing strings like "0x-abc".
+    const high = BigInt.asUintN(64, BigInt(String(pair[0]))).toString(16);
+    const low = BigInt.asUintN(64, BigInt(String(pair[1]))).toString(16);
+    return `0x${high}:0x${low}`;
   } catch {
+    // A non-numeric half cannot identify a place, so let the caller use its URL fallback.
+    return undefined;
+  }
+}
+
+/**
+ * Normalize canonical IDs and legacy IDs containing a signed hexadecimal half.
+ * This keeps places imported before the unsigned conversion fix usable without migration.
+ */
+export function normalizePlaceId(value: unknown): string | undefined {
+  // Each half contains at most 64 bits; an optional minus sign marks a legacy signed value.
+  const match = typeof value === "string" ? value.match(/^0x(-?[0-9a-f]{1,16}):0x(-?[0-9a-f]{1,16})$/i) : null;
+  if (!match) return undefined;
+  try {
+    // Parse each half independently, wrapping negative legacy values back to unsigned 64-bit form.
+    const halves = [match[1]!, match[2]!].map((part) => {
+      const parsed = part.startsWith("-") ? -BigInt(`0x${part.slice(1)}`) : BigInt(`0x${part}`);
+      return BigInt.asUintN(64, parsed).toString(16);
+    });
+    return `0x${halves[0]}:0x${halves[1]}`;
+  } catch {
+    // Defensive fallback for values that pass the shape check but fail numeric parsing.
     return undefined;
   }
 }

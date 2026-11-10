@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { expandShortlink, extractListId, fetchGmapsList, fetchPlaceHours, RateLimitedError } from "@/lib/gmaps-core";
+import { expandShortlink, extractListId, fetchGmapsList, fetchPlaceHours, normalizePlaceId, RateLimitedError } from "@/lib/gmaps-core";
 import { formatPlaceName, isValidGmapsUrl, nameFromGmapsUrl, parseAddress, type PlaceMeta } from "@/lib/restaurants";
 import type { PlaceHours } from "@/lib/opening-hours";
 
