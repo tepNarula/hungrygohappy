@@ -61,11 +61,42 @@ export function extractListId(url: string): string | undefined {
 
 export interface ListPlace { url: string; name: string; address?: string | undefined; placeId?: string | undefined }
 
-function toHexId(pair: unknown): string | undefined {
+/**
+ * Convert Google's pair of signed 64-bit decimal integers into its canonical place ID.
+ * BigInt#toString preserves a minus sign, so explicitly reinterpreting each value as an
+ * unsigned 64-bit integer is essential for IDs whose highest bit is set.
+ */
+export function toHexId(pair: unknown): string | undefined {
+  // Google stores the two ID halves as a two-element array; ignore malformed payloads.
   if (!Array.isArray(pair) || pair.length < 2) return undefined;
   try {
-    return `0x${BigInt(String(pair[0])).toString(16)}:0x${BigInt(String(pair[1])).toString(16)}`;
+    // asUintN performs two's-complement wrapping instead of producing strings like "0x-abc".
+    const high = BigInt.asUintN(64, BigInt(String(pair[0]))).toString(16);
+    const low = BigInt.asUintN(64, BigInt(String(pair[1]))).toString(16);
+    return `0x${high}:0x${low}`;
   } catch {
+    // A non-numeric half cannot identify a place, so let the caller use its URL fallback.
+    return undefined;
+  }
+}
+
+/**
+ * Normalize canonical IDs and legacy IDs containing a signed hexadecimal half.
+ * This keeps places imported before the unsigned conversion fix usable without migration.
+ */
+export function normalizePlaceId(value: unknown): string | undefined {
+  // Each half contains at most 64 bits; an optional minus sign marks a legacy signed value.
+  const match = typeof value === "string" ? value.match(/^0x(-?[0-9a-f]{1,16}):0x(-?[0-9a-f]{1,16})$/i) : null;
+  if (!match) return undefined;
+  try {
+    // Parse each half independently, wrapping negative legacy values back to unsigned 64-bit form.
+    const halves = [match[1]!, match[2]!].map((part) => {
+      const parsed = part.startsWith("-") ? -BigInt(`0x${part.slice(1)}`) : BigInt(`0x${part}`);
+      return BigInt.asUintN(64, parsed).toString(16);
+    });
+    return `0x${halves[0]}:0x${halves[1]}`;
+  } catch {
+    // Defensive fallback for values that pass the shape check but fail numeric parsing.
     return undefined;
   }
 }
@@ -177,18 +208,38 @@ export function parsePlaceHours(text: string): PlaceHours {
 
 /** Look up a place's weekly hours via its Google feature id (found in list data or the place URL). */
 export async function fetchPlaceHours(url: string, placeId?: string): Promise<PlaceHours | null> {
-  let id = placeId ?? url.match(/!1s(0x[0-9a-f]+:0x[0-9a-f]+)/i)?.[1] ?? url.match(/[?&]ftid=(0x[0-9a-f]+:0x[0-9a-f]+)/i)?.[1];
+  // Normalize stored IDs first so both fixed and legacy imports produce a valid Google request.
+  let id = normalizePlaceId(placeId)
+    ?? normalizePlaceId(url.match(/!1s(0x[0-9a-f]+:0x[0-9a-f]+)/i)?.[1])
+    ?? normalizePlaceId(url.match(/[?&]ftid=(0x[0-9a-f]+:0x[0-9a-f]+)/i)?.[1]);
   if (!id && SHORT_HOSTS.has(new URL(url).hostname)) {
+    // A shortlink hides its feature ID until Google returns the canonical destination URL.
     const expanded = await expandShortlink(url);
-    id = expanded.match(/!1s(0x[0-9a-f]+:0x[0-9a-f]+)/i)?.[1] ?? expanded.match(/[?&]ftid=(0x[0-9a-f]+:0x[0-9a-f]+)/i)?.[1];
+    id = normalizePlaceId(expanded.match(/!1s(0x[0-9a-f]+:0x[0-9a-f]+)/i)?.[1])
+      ?? normalizePlaceId(expanded.match(/[?&]ftid=(0x[0-9a-f]+:0x[0-9a-f]+)/i)?.[1]);
   }
-  if (!id) return null;
+  if (!id) {
+    // Diagnostics distinguish an unusable stored ID from a provider-side response failure.
+    console.error("place hours: no usable feature ID", { url, placeId });
+    return null;
+  }
+  // Fetch the compact place page, which contains the endpoint for the weekly-hours payload.
   const page = await politeFetch(`https://www.google.com/maps/place/data=!4m2!3m1!1s${id}?hl=en`);
-  if (!page.ok) return null;
+  if (!page.ok) {
+    console.error("place hours: place page failed", { id, status: page.status });
+    return null;
+  }
   const html = await page.text();
+  // Google embeds a fully parameterized detail endpoint in the place page markup.
   const preview = html.match(/preview\/place\?[^"]+/)?.[0]?.replace(/&amp;/g, "&");
-  if (!preview) return null;
+  if (!preview) {
+    console.error("place hours: preview endpoint missing", { id, htmlLength: html.length });
+    return null;
+  }
   const res = await politeFetch(`https://www.google.com/maps/${preview}`);
-  if (!res.ok) return null;
+  if (!res.ok) {
+    console.error("place hours: preview request failed", { id, status: res.status });
+    return null;
+  }
   return parsePlaceHours(await res.text());
 }

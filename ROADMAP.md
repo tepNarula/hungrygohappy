@@ -6,7 +6,9 @@
   - [x] (2026-11-09) Pre-spin location filter (match counter, city/province chips, text input) limits spin candidates — verified in browser (217 → 12 for "bangkok")
   - [x] (2026-11-09) Result screen shows location under the name and an opening-status badge; "Back to Roulette" left of "Let's Go!" — verified in browser
   - [x] (2026-11-09) Unit tests `src/test/location-filter.test.ts` (6 tests)
-  - [ ] Opening hours lookup returned "Hours unlisted" for the tested place; verify `getPlaceHours` actually extracts hours from Google
+  - [x] (2026-11-10) Fixed signed 64-bit Google place-ID conversion with `BigInt.asUintN`; legacy signed-hex IDs are normalized at lookup so existing rows need no migration
+  - [x] (2026-11-10) Added `src/test/gmaps-place-id.test.ts` (3 regression tests); full suite passes 24 tests across 8 files
+  - [ ] Live opening-hours badge remains unverified: the fixed legacy ID initially returned 7 days of hours in a direct helper check, but the app server receives Google HTTP 403 anti-abuse responses and the browser still shows "Hours unlisted"
 - [ ] (2026-11-03) Comprehensive educational code documentation:
   - [x] Explanatory comments added to new test and utility files (including `cloud-sync`, `gmaps-resolver`, `gmaps-sync-plan`, `restaurants`, `refresh-gmaps-lists`, `location-filter`)
   - [ ] Retrofit educational docstrings and control-flow explanations across all pre-existing source files
