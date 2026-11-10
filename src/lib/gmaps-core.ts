@@ -208,10 +208,15 @@ export function parsePlaceHours(text: string): PlaceHours {
 
 /** Look up a place's weekly hours via its Google feature id (found in list data or the place URL). */
 export async function fetchPlaceHours(url: string, placeId?: string): Promise<PlaceHours | null> {
-  let id = placeId ?? url.match(/!1s(0x[0-9a-f]+:0x[0-9a-f]+)/i)?.[1] ?? url.match(/[?&]ftid=(0x[0-9a-f]+:0x[0-9a-f]+)/i)?.[1];
+  // Normalize stored IDs first so both fixed and legacy imports produce a valid Google request.
+  let id = normalizePlaceId(placeId)
+    ?? normalizePlaceId(url.match(/!1s(0x[0-9a-f]+:0x[0-9a-f]+)/i)?.[1])
+    ?? normalizePlaceId(url.match(/[?&]ftid=(0x[0-9a-f]+:0x[0-9a-f]+)/i)?.[1]);
   if (!id && SHORT_HOSTS.has(new URL(url).hostname)) {
+    // A shortlink hides its feature ID until Google returns the canonical destination URL.
     const expanded = await expandShortlink(url);
-    id = expanded.match(/!1s(0x[0-9a-f]+:0x[0-9a-f]+)/i)?.[1] ?? expanded.match(/[?&]ftid=(0x[0-9a-f]+:0x[0-9a-f]+)/i)?.[1];
+    id = normalizePlaceId(expanded.match(/!1s(0x[0-9a-f]+:0x[0-9a-f]+)/i)?.[1])
+      ?? normalizePlaceId(expanded.match(/[?&]ftid=(0x[0-9a-f]+:0x[0-9a-f]+)/i)?.[1]);
   }
   if (!id) return null;
   const page = await politeFetch(`https://www.google.com/maps/place/data=!4m2!3m1!1s${id}?hl=en`);

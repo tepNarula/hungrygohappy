@@ -12,7 +12,8 @@ export const getPlaceHours = createServerFn({ method: "POST" })
     const url = String(input?.url ?? "").trim();
     // Only Google Maps HTTPS links may be fetched, preventing use as an open proxy.
     if (!url || url.length > 2000 || !url.startsWith("https://") || !isValidGmapsUrl(url)) throw new Error("Invalid link");
-    const placeId = typeof input?.placeId === "string" && /^0x[0-9a-f]+:0x[0-9a-f]+$/i.test(input.placeId) ? input.placeId : undefined;
+    // Accept both canonical IDs and legacy signed-hex IDs, normalizing before the Google lookup.
+    const placeId = normalizePlaceId(input?.placeId);
     return { url, placeId };
   })
   .handler(async ({ data }): Promise<PlaceHours | null> => {
