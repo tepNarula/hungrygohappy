@@ -1,0 +1,13 @@
+# HungryGoHappy Flet Companion App — Runtime Dependencies
+# =======================================================
+# Minimal, locked-specification runtime dependencies required to run the
+# standalone Python application across Android (via APK build), Desktop, and Web.
+
+# Cross-platform Flutter-powered UI engine and runtime framework
+flet>=0.25.0
+
+# Backend PostgreSQL data access and realtime sync matching SCHEMA.md
+supabase>=2.10.0
+
+# Asynchronous HTTP client for following Google Maps 302 redirects and list scraping
+httpx>=0.27.0
