@@ -67,9 +67,9 @@ export const Route = createFileRoute("/roadmap")({
 interface RoadmapItem {
   id: string;
   completed: boolean;
-  date?: string;
+  date?: string | undefined;
   title: string;
-  badge?: "Critical" | "Warning" | "Info";
+  badge?: "Critical" | "Warning" | "Info" | undefined;
   subItems: string[];
   rawText: string;
 }
@@ -406,5 +406,3 @@ export function RoadmapPage() {
     </div>
   );
 }
-
-export default RoadmapPage;
