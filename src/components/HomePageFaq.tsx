@@ -47,31 +47,22 @@ const FAQS: FaqItem[] = [
     ],
   },
   {
-    q: "Is there an active development plan?",
+    q: "Can I get the sourcecode; and Is there an active development plan?",
     a: [
       <span>
-        Yes! We try to keep the{" "}
-        <a href="/roadmap"
-          target="_blank" rel="noopener noreferrer"
-          className="text-primary font-medium underline underline-offset-4 hover:opacity-80"
-        >
-          Development Roadmap & Releases History
-        </a>
-        consistenly up-to-date.
-      </span>,
-    ],
-  },
-  {
-    q: "Can I get the sourcecode?",
-    a: [
-      <span>
-        Yes! sourcecode is published to{" "}
+        Yes! Full sourcecode is published to{" "}
         <a href="https://github.com/tepNarula/hungrygohappy"
           target="_blank" rel="noopener noreferrer"
           className="text-primary font-medium underline underline-offset-4 hover:opacity-80"
         >
           github
-        </a>
+        </a>; and the{" "}
+        <a href="/roadmap"
+          target="_blank" rel="noopener noreferrer"
+          className="text-primary font-medium underline underline-offset-4 hover:opacity-80"
+        >
+          Development Roadmap & Releases History Page
+        </a> is automatically & directly rendered from the source on github.
       </span>,
     ],
   },
