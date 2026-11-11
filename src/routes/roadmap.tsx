@@ -215,13 +215,14 @@ export function RoadmapPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors">
-      {/* Sticky Sub-Header with Navigation and Search Controls */}
+      {/* Sticky Sub-Header */}
       <header className="sticky top-0 z-30 border-b border-border bg-card/85 backdrop-blur-md">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6" />
       </header>
 
       {/* Main Content Area */}
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
+        {/* Sticky Sub-Header with Navigation and Search Controls */}
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <div className="flex items-center gap-2">
             <Button
@@ -239,22 +240,21 @@ export function RoadmapPage() {
               Development Roadmap & Releases History
             </h1>
           </div>
-
-          <div className="flex items-center gap-2">
-            {/* Search Input Filter */}
-            <div className="relative w-36 sm:w-60">
-              <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Filter roadmap..."
-                aria-label="Filter roadmap items"
-                className="w-full rounded-full border border-input bg-background py-1.5 pl-8 pr-3 text-xs sm:text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              />
-            </div>
-          </div>
         </div>
+
+        {/* Search Input Filter */}
+        <div className="relative w-36 sm:w-60">
+          <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+             type="text"
+             value={searchQuery}
+             onChange={(e) => setSearchQuery(e.target.value)}
+             placeholder="Filter roadmap..."
+             aria-label="Filter roadmap items"
+             className="w-full rounded-full border border-input bg-background py-1.5 pl-8 pr-3 text-xs sm:text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+           />
+        </div>
+
         {/* Sections Listing */}
         <div className="space-y-10">
           {filteredSections.map((sec) => {
