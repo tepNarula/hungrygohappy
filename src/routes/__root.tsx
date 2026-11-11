@@ -1,3 +1,17 @@
+/**
+ * @file src/routes/__root.tsx
+ * @description Application root layout and shell configuration for TanStack Start.
+ * 
+ * Configures:
+ * 1. Global <head> metadata, fonts (Fraunces & Inter), stylesheets, and favicon.
+ * 2. Early inline anti-FOUC script ensuring dark mode defaults on initial visit
+ *    without client-side hydration flicker.
+ * 3. Top-left persistent display controls (<TopHeaderControls />) mounted globally.
+ * 4. Responsive viewport container supporting simulated mobile frame mode
+ *    (listening for `hungry:viewport-frame-change` events).
+ * 5. TanStack QueryClientProvider, global <Toaster />, and root error/not-found boundaries.
+ */
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
@@ -8,10 +22,16 @@ import {
   Scripts,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import {
+  TopHeaderControls,
+  VIEWPORT_FRAME_EVENT,
+  getSavedViewportFrame,
+} from "../components/TopHeaderControls";
 
 function NotFoundComponent() {
   return (
@@ -105,13 +125,36 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
+/**
+ * Root HTML shell. Inlines an anti-FOUC theme initialization script so dark mode
+ * is applied prior to rendering, preventing any white background flash.
+ */
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Anti-FOUC early script: defaults to 'dark' when no saved preference exists */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){
+              try {
+                var theme = localStorage.getItem('hungry_theme') || 'dark';
+                if (theme === 'dark') {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                }
+                var frame = localStorage.getItem('hungry_viewport_frame');
+                if (frame === 'mobile') {
+                  document.documentElement.setAttribute('data-viewport-frame', 'mobile');
+                }
+              } catch (e) {}
+            })();`,
+          }}
+        />
         <HeadContent />
       </head>
-      <body>
+      <body className="min-h-screen bg-background text-foreground antialiased selection:bg-primary/20 selection:text-primary">
         {children}
         <Scripts />
       </body>
@@ -119,13 +162,54 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+/**
+ * Root component wrapping nested routes with QueryClientProvider,
+ * top-left controls, and responsive viewport framing.
+ */
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const [isMobileFrame, setIsMobileFrame] = useState<boolean>(false);
+
+  // Sync mobile frame state on client mount and subscribe to toggle events
+  useEffect(() => {
+    setIsMobileFrame(getSavedViewportFrame());
+
+    const handleFrameChange = (e: Event) => {
+      const customEvent = e as CustomEvent<{ isMobileFrame: boolean }>;
+      if (customEvent.detail && typeof customEvent.detail.isMobileFrame === "boolean") {
+        setIsMobileFrame(customEvent.detail.isMobileFrame);
+      }
+    };
+
+    window.addEventListener(VIEWPORT_FRAME_EVENT, handleFrameChange);
+    return () => {
+      window.removeEventListener(VIEWPORT_FRAME_EVENT, handleFrameChange);
+    };
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      {/* Top-left floating header controls (Theme & Viewport Switchers) */}
+      <TopHeaderControls />
+
+      {/* 
+        Simulated mobile frame container:
+        When active, restricts maximum width to 420px with centered margin, subtle borders,
+        and elevation shadow to preview mobile layout behavior on wide screens.
+      */}
+      <div
+        className={
+          isMobileFrame
+            ? "mx-auto min-h-screen max-w-[420px] border-x border-border/80 shadow-2xl transition-all duration-200 bg-background"
+            : "min-h-screen w-full transition-all duration-200"
+        }
+      >
+        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+        <Outlet />
+      </div>
+
+      {/* Global toast notification system */}
+      <Toaster richColors position="top-center" closeButton />
     </QueryClientProvider>
   );
 }
