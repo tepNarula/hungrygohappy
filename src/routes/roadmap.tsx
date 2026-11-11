@@ -228,9 +228,9 @@ export function RoadmapPage() {
             <ArrowLeft className="h-4 w-4" />
             <span>Back</span>
           </Button>
-          <h1 className="font-display text-xl font-bold text-foreground">
+          <h2 className="font-display text-xl font-bold text-foreground">
             Development Roadmap & Releases History
-          </h1>
+          </h2>
         </div>
       </header>
 
