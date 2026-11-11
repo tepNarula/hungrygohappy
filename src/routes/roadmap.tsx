@@ -9,9 +9,7 @@
  * 4. Completed Features (reverse chronological delivery log with dates and details)
  * 
  * Includes:
- * - Back navigation with fallback to the default roulette list (`/default`).
- * - Real-time keyword filter across all sections.
- * - Quick-copy button to copy the entire markdown source for GitHub commits.
+ * - Back navigation with fallback to the home page (`/`).
  * - TanStack Start route head() SEO and OpenGraph metadata.
  */
 
@@ -41,13 +39,8 @@ export const Route = createFileRoute("/roadmap")({
     meta: [
       { title: "Development Roadmap & Releases History" },
       {
-        name: "description",
-        content:
-          "Explore the live development roadmap, release history, verified features, scanner security findings, and upcoming enhancements for Hungry Roulette.",
-      },
-      {
         property: "og:title",
-        content: "Development Roadmap & Releases History | Hungry Roulette",
+        content: "Development Roadmap & Releases History | HungryGoHappy",
       },
       {
         property: "og:description",
@@ -76,7 +69,6 @@ interface RoadmapItem {
 
 interface RoadmapSection {
   title: string;
-//  description: string;
   icon: typeof Sparkles;
   items: RoadmapItem[];
 }
@@ -229,7 +221,6 @@ export function RoadmapPage() {
             <h1 className="font-display text-lg font-bold tracking-tight sm:text-xl">
               Development Roadmap & Releases History
             </h1>
-          </div>
           </div>
         </div>
       </header>
