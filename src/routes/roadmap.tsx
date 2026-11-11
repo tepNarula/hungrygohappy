@@ -216,7 +216,7 @@ export function RoadmapPage() {
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors">
       {/* Sticky Sub-Header */}
-      <header className="sticky top-0 z-40 border-b border-border bg-card/85 backdrop-blur-md">
+      <header className="sticky text-center top-0 z-40 border-b border-border bg-card/85 backdrop-blur-md">
         <h1 className="font-display text-xl font-bold text-foreground">
           Development Roadmap & Releases History
         </h1>
