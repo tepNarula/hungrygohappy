@@ -47,6 +47,21 @@ const FAQS: FaqItem[] = [
     ],
   },
   {
+    q: "Is there an active development plan?",
+    a: [
+      <span>
+        Yes! We try to keep the{" "}
+        <a href="/roadmap"
+          target="_blank" rel="noopener noreferrer"
+          className="text-primary font-medium underline underline-offset-4 hover:opacity-80"
+        >
+          Development Roadmap & Releases History
+        </a>
+        consistenly up-to-date.
+      </span>,
+    ],
+  },
+  {
     q: "Can I get the sourcecode?",
     a: [
       <span>
