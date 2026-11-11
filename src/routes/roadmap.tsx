@@ -220,7 +220,6 @@ export function RoadmapPage() {
           Development Roadmap & Releases History
         </h1>
         {/* Search Input Filter */}
-        <div>
           <Search className="left-5 h-4 w-4 text-muted-foreground" />
             <input
              type="text"
@@ -230,7 +229,6 @@ export function RoadmapPage() {
              aria-label="Filter roadmap items"
              className="w-full rounded-full border border-input bg-background py-1.5 pl-8 pr-3 text-xs sm:text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
            />
-        </div>
       </header>
 
       {/* Main Content Area */}
