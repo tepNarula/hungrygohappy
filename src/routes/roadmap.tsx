@@ -42,11 +42,6 @@ export const Route = createFileRoute("/roadmap")({
         property: "og:title",
         content: "Development Roadmap & Releases History | HungryGoHappy",
       },
-      {
-        property: "og:description",
-        content:
-          "Live development roadmap, scanner security audit status, and release milestones.",
-      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -168,29 +163,9 @@ function parseRoadmapMarkdown(content: string): RoadmapSection[] {
  */
 export function RoadmapPage() {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [copied, setCopied] = useState(false);
 
   // Parse raw markdown once into structured sections
   const sections = useMemo(() => parseRoadmapMarkdown(rawRoadmapContent), []);
-
-  // Filter sections and items based on search query
-  const filteredSections = useMemo(() => {
-    if (!searchQuery.trim()) return sections;
-    const q = searchQuery.toLowerCase();
-
-    return sections
-      .map((sec) => ({
-        ...sec,
-        items: sec.items.filter(
-          (item) =>
-            item.title.toLowerCase().includes(q) ||
-            item.date?.toLowerCase().includes(q) ||
-            item.subItems.some((sub) => sub.toLowerCase().includes(q))
-        ),
-      }))
-      .filter((sec) => sec.items.length > 0);
-  }, [sections, searchQuery]);
 
   // Safe back navigation: returns to previous browser history or defaults to /
   const handleBack = () => {
@@ -221,6 +196,7 @@ export function RoadmapPage() {
             <h1 className="font-display text-lg font-bold tracking-tight sm:text-xl">
               Development Roadmap & Releases History
             </h1>
+            <div className="h-4 w-px bg-border hidden sm:block" />
           </div>
         </div>
       </header>
@@ -314,13 +290,6 @@ export function RoadmapPage() {
               </section>
             );
           })}
-
-          {filteredSections.length === 0 && (
-            <div className="rounded-xl border border-dashed border-border py-12 text-center text-sm text-muted-foreground">
-              No roadmap items match "{searchQuery}".
-            </div>
-          )}
-        </div>
       </main>
     </div>
   );
