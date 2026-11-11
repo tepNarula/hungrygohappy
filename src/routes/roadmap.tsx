@@ -9,7 +9,9 @@
  * 4. Completed Features (reverse chronological delivery log with dates and details)
  * 
  * Includes:
- * - Back navigation with fallback to the home page (`/`).
+ * - Back navigation with fallback to the default roulette list (`/default`).
+ * - Real-time keyword filter across all sections.
+ * - Quick-copy button to copy the entire markdown source for GitHub commits.
  * - TanStack Start route head() SEO and OpenGraph metadata.
  */
 
@@ -37,10 +39,20 @@ import rawRoadmapContent from "../../ROADMAP.md?raw";
 export const Route = createFileRoute("/roadmap")({
   head: () => ({
     meta: [
-      { title: "Development Roadmap & Releases History" },
+      { title: "Development Roadmap & Releases History | Hungry Roulette" },
+      {
+        name: "description",
+        content:
+          "Explore the live development roadmap, release history, verified features, scanner security findings, and upcoming enhancements for Hungry Roulette.",
+      },
       {
         property: "og:title",
-        content: "Development Roadmap & Releases History | HungryGoHappy",
+        content: "Development Roadmap & Releases History | Hungry Roulette",
+      },
+      {
+        property: "og:description",
+        content:
+          "Live development roadmap, scanner security audit status, and release milestones.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -55,15 +67,16 @@ export const Route = createFileRoute("/roadmap")({
 interface RoadmapItem {
   id: string;
   completed: boolean;
-  date?: string | undefined;
+  date?: string;
   title: string;
-  badge?: "Critical" | "Warning" | "Info" | undefined;
+  badge?: "Critical" | "Warning" | "Info";
   subItems: string[];
   rawText: string;
 }
 
 interface RoadmapSection {
   title: string;
+  description: string;
   icon: typeof Sparkles;
   items: RoadmapItem[];
 }
@@ -163,16 +176,47 @@ function parseRoadmapMarkdown(content: string): RoadmapSection[] {
  */
 export function RoadmapPage() {
   const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [copied, setCopied] = useState(false);
 
   // Parse raw markdown once into structured sections
   const sections = useMemo(() => parseRoadmapMarkdown(rawRoadmapContent), []);
 
-  // Safe back navigation: returns to previous browser history or defaults to /
+  // Filter sections and items based on search query
+  const filteredSections = useMemo(() => {
+    if (!searchQuery.trim()) return sections;
+    const q = searchQuery.toLowerCase();
+
+    return sections
+      .map((sec) => ({
+        ...sec,
+        items: sec.items.filter(
+          (item) =>
+            item.title.toLowerCase().includes(q) ||
+            item.date?.toLowerCase().includes(q) ||
+            item.subItems.some((sub) => sub.toLowerCase().includes(q))
+        ),
+      }))
+      .filter((sec) => sec.items.length > 0);
+  }, [sections, searchQuery]);
+
+  // Handler: Copy raw markdown for GitHub commits
+  const handleCopyRaw = async () => {
+    try {
+      await navigator.clipboard.writeText(rawRoadmapContent);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.warn("Unable to copy roadmap text:", err);
+    }
+  };
+
+  // Safe back navigation: returns to previous browser history or defaults to /default
   const handleBack = () => {
     if (typeof window !== "undefined" && window.history.length > 1) {
       window.history.back();
     } else {
-      router.navigate({ to: "/", params: {} });
+      router.navigate({ to: "/$list", params: { list: "default" } });
     }
   };
 
@@ -194,12 +238,73 @@ export function RoadmapPage() {
             </Button>
             <div className="h-4 w-px bg-border hidden sm:block" />
             <h1 className="font-display text-lg font-bold tracking-tight sm:text-xl">
-              Development Roadmap & Releases History
+              Roadmap & Releases
             </h1>
-            <div className="h-4 w-px bg-border hidden sm:block" />
+          </div>
+
+          <div className="flex items-center gap-2">
+            {/* Search Input Filter */}
+            <div className="relative w-36 sm:w-60">
+              <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Filter roadmap..."
+                aria-label="Filter roadmap items"
+                className="w-full rounded-full border border-input bg-background py-1.5 pl-8 pr-3 text-xs sm:text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+            </div>
+
+            {/* Quick Copy Markdown Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCopyRaw}
+              title="Copy raw markdown to clipboard"
+              className="gap-1.5 text-xs sm:text-sm"
+            >
+              {copied ? (
+                <>
+                  <Check className="h-3.5 w-3.5 text-emerald-500" />
+                  <span className="hidden sm:inline">Copied!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Copy Markdown</span>
+                </>
+              )}
+            </Button>
           </div>
         </div>
       </header>
+
+      {/* Main Content Area */}
+      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
+        {/* Hero Banner */}
+        <section className="mb-8 rounded-2xl border border-border bg-card p-6 shadow-sm">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                Development Roadmap & Releases History
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Continuous delivery log and milestone tracker for the Hungry Roulette web app and Flet companion.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 pt-2 sm:pt-0">
+              <Link
+                to="/$list"
+                params={{ list: "default" }}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+              >
+                Go to Roulette App
+                <ExternalLink className="h-3 w-3" />
+              </Link>
+            </div>
+          </div>
+        </section>
 
         {/* Sections Listing */}
         <div className="space-y-10">
@@ -290,7 +395,16 @@ export function RoadmapPage() {
               </section>
             );
           })}
+
+          {filteredSections.length === 0 && (
+            <div className="rounded-xl border border-dashed border-border py-12 text-center text-sm text-muted-foreground">
+              No roadmap items match "{searchQuery}".
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );
 }
+
+export default RoadmapPage;
