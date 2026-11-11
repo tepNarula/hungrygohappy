@@ -216,12 +216,12 @@ export function RoadmapPage() {
     <div className="min-h-screen bg-background text-foreground transition-colors">
       {/* Sticky Sub-Header */}
       <header className="sticky text-center top-0 z-40 border-b border-border bg-card/85 backdrop-blur-md">
-        <h1 className="font-display">
+        <h1 className="font-display text-xl font-bold text-foreground">
           Development Roadmap & Releases History
         </h1>
         {/* Search Input Filter */}
-        <div className="space-y-5">
-          <Search className="left-2.5 top-1 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <div className="space-y-2.5">
+          <Search className="left-2.5 top-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
              type="text"
              value={searchQuery}
