@@ -9,7 +9,6 @@
  * 4. Completed Features (reverse chronological delivery log with dates and details)
  * 
  * Includes:
- * - Back navigation with fallback to the default roulette list (`/default`).
  * - Real-time keyword filter across all sections.
  * - [implemented; not enabled] Quick-copy button to copy the entire markdown source for GitHub commits.
  * - TanStack Start route head() SEO and OpenGraph metadata.
@@ -217,15 +216,17 @@ export function RoadmapPage() {
     <div className="min-h-screen bg-background text-foreground transition-colors">
       {/* Sticky Sub-Header */}
       <header className="sticky text-center top-0 z-40 border-b border-border bg-card/85 backdrop-blur-md">
-        <h1 className="font-display text-xl font-bold text-foreground">
+        <h1 className="font-display">
           Development Roadmap & Releases History
         </h1>
       </header>
 
       {/* Main Content Area */}
-      <main className="top-20 mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
+      <main className="top-10 mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
+        
         {/* Search Input Filter */}
-        <div className="w-36 sm:w-60">
+//        <div className="space-y-10 w-36 sm:w-60">
+        <div className="space-y-10">
           <Search className="left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
              type="text"
