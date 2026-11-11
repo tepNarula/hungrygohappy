@@ -243,6 +243,8 @@ export function RoadmapPage() {
             </h3>
         </div>
 
+        <div className="space-y-10"/>
+
         {/* Search Input Filter */}
         <div className="relative w-36 sm:w-60">
           <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
