@@ -11,7 +11,7 @@
  * Includes:
  * - Back navigation with fallback to the default roulette list (`/default`).
  * - Real-time keyword filter across all sections.
- * - Quick-copy button to copy the entire markdown source for GitHub commits.
+ * - [implemented; not enabled] Quick-copy button to copy the entire markdown source for GitHub commits.
  * - TanStack Start route head() SEO and OpenGraph metadata.
  */
 
@@ -248,27 +248,6 @@ export function RoadmapPage() {
                 className="w-full rounded-full border border-input bg-background py-1.5 pl-8 pr-3 text-xs sm:text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
             </div>
-
-            {/* Quick Copy Markdown Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleCopyRaw}
-              title="Copy raw markdown to clipboard"
-              className="gap-1.5 text-xs sm:text-sm"
-            >
-              {copied ? (
-                <>
-                  <Check className="h-3.5 w-3.5 text-emerald-500" />
-                  <span className="hidden sm:inline">Copied!</span>
-                </>
-              ) : (
-                <>
-                  <Copy className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Copy Markdown</span>
-                </>
-              )}
-            </Button>
           </div>
         </div>
       </header>
