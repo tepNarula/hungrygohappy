@@ -222,7 +222,7 @@ export function RoadmapPage() {
       {/* Main Content Area */}
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
 
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+        <div className="mx-auto flex max-w-5xl">
             <Button
               variant="ghost"
               size="sm"
@@ -235,8 +235,10 @@ export function RoadmapPage() {
             </Button>
         </div>
 
-        <div className="mx-auto flex justify-between gap-3 px-4 py-3 sm:px-6">
-            <h3 className="font-display text-lg font-bold tracking-tight sm:text-xl">
+        <div className="space-y-10"/>
+
+        <div className="mx-auto flex">
+            <h3 className="font-display text-xl font-bold text-foreground">
               Development Roadmap & Releases History
             </h3>
         </div>
