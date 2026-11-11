@@ -221,12 +221,12 @@ export function RoadmapPage() {
         </h1>
         {/* Search Input Filter */}
         <div>
-          <Search className="left-5 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="left-5 h-4 w-4 text-muted-foreground" />
             <input
              type="text"
              value={searchQuery}
              onChange={(e) => setSearchQuery(e.target.value)}
-             placeholder="Filter roadmap..."
+             placeholder="Filter roadmap items..."
              aria-label="Filter roadmap items"
              className="w-full rounded-full border border-input bg-background py-1.5 pl-8 pr-3 text-xs sm:text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
            />
