@@ -217,14 +217,12 @@ export function RoadmapPage() {
     <div className="min-h-screen bg-background text-foreground transition-colors">
       {/* Sticky Sub-Header */}
       <header className="sticky top-0 z-30 border-b border-border bg-card/85 backdrop-blur-md">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6" />
       </header>
 
       {/* Main Content Area */}
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
-        {/* Sticky Sub-Header with Navigation and Search Controls */}
+
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="sm"
@@ -235,11 +233,12 @@ export function RoadmapPage() {
               <ArrowLeft className="h-4 w-4" />
               <span>Back</span>
             </Button>
-            <div className="h-4 w-px bg-border hidden sm:block" />
-            <h1 className="font-display text-lg font-bold tracking-tight sm:text-xl">
+        </div>
+
+        <div className="mx-auto flex justify-between gap-3 px-4 py-3 sm:px-6">
+            <h3 className="font-display text-lg font-bold tracking-tight sm:text-xl">
               Development Roadmap & Releases History
-            </h1>
-          </div>
+            </h3>
         </div>
 
         {/* Search Input Filter */}
