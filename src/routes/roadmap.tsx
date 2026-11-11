@@ -41,11 +41,6 @@ export const Route = createFileRoute("/roadmap")({
     meta: [
       { title: "Development Roadmap & Releases History | Hungry Roulette" },
       {
-        name: "description",
-        content:
-          "Explore the live development roadmap, release history, verified features, scanner security findings, and upcoming enhancements for Hungry Roulette.",
-      },
-      {
         property: "og:title",
         content: "Development Roadmap & Releases History | Hungry Roulette",
       },
@@ -76,7 +71,6 @@ interface RoadmapItem {
 
 interface RoadmapSection {
   title: string;
-  description: string;
   icon: typeof Sparkles;
   items: RoadmapItem[];
 }
@@ -162,7 +156,6 @@ function parseRoadmapMarkdown(content: string): RoadmapSection[] {
 
     sections.push({
       title: sectionTitle,
-      description,
       icon,
       items,
     });
