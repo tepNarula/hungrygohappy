@@ -275,30 +275,6 @@ export function RoadmapPage() {
 
       {/* Main Content Area */}
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
-        {/* Hero Banner */}
-        <section className="mb-8 rounded-2xl border border-border bg-card p-6 shadow-sm">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-                Development Roadmap & Releases History
-              </h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Continuous delivery log and milestone tracker for the Hungry Roulette web app and Flet companion.
-              </p>
-            </div>
-            <div className="flex items-center gap-2 pt-2 sm:pt-0">
-              <Link
-                to="/$list"
-                params={{ list: "default" }}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
-              >
-                Go to Roulette App
-                <ExternalLink className="h-3 w-3" />
-              </Link>
-            </div>
-          </div>
-        </section>
-
         {/* Sections Listing */}
         <div className="space-y-10">
           {filteredSections.map((sec) => {
