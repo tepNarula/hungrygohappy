@@ -216,7 +216,7 @@ export function RoadmapPage() {
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors">
       {/* Sticky Sub-Header */}
-      <header className="sticky top-10 z-30 border-b border-border bg-card/85 backdrop-blur-md">
+      <header className="sticky top-0 z-40 border-b border-border bg-card/85 backdrop-blur-md">
         <div className="mx-auto flex max-w-5xl">
             <Button
               variant="ghost"
@@ -229,18 +229,17 @@ export function RoadmapPage() {
               <span>Back</span>
             </Button>
         </div>
+        <div className="mx-auto flex space-y-10">
+          <h1 className="font-display text-xl font-bold text-foreground">
+            Development Roadmap & Releases History
+          </h1>
+        </div>
       </header>
 
       {/* Main Content Area */}
       <main className="top-20 mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
-        <div className="mx-auto flex space-y-10">
-            <h1 className="font-display text-xl font-bold text-foreground">
-              Development Roadmap & Releases History
-            </h1>
-        </div>
-
         {/* Search Input Filter */}
-        <div className="w-36 sm:w-60 space-y-10">
+        <div className="w-36 sm:w-60">
           <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
              type="text"
@@ -251,7 +250,7 @@ export function RoadmapPage() {
              className="w-full rounded-full border border-input bg-background py-1.5 pl-8 pr-3 text-xs sm:text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
            />
         </div>
-        
+
         {/* Sections Listing */}
         <div className="space-y-10">
           {filteredSections.map((sec) => {
