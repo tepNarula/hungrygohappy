@@ -1,4 +1,23 @@
+/**
+ * @file src/components/RoulettePage.tsx
+ * @description Main interactive Roulette view for a given restaurant list.
+ * 
+ * Capabilities:
+ * - Hybrid storage: reads immediately from localStorage, then synchronizes two-way
+ *   with the Lovable Cloud database (`fetchCloudList`, `syncWithLocal`, `subscribeList`).
+ * - Pre-spin location filtering: filters restaurants by city, province, postal code,
+ *   or country, updating candidate counts and providing clickable suggestion chips.
+ * - Roulette spin mechanic: cycles through matching places at high speed before
+ *   landing on a random selection.
+ * - Result card: displays place name, location metadata, real-time opening hours status,
+ *   embedded Google Maps iframe, and navigation/action buttons.
+ * - Slide-out Settings drawer: provides quick actions (Share, Add Places), top-5 visited places,
+ *   full sortable visit list modal, tracked Google Maps lists dialog, and link to the
+ *   dedicated Development Roadmap & Releases History page.
+ */
+
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import {
   loadRestaurants,
   saveRestaurants,
@@ -11,7 +30,16 @@ import { RestaurantVisitList } from "@/components/RestaurantVisitList";
 import { AddRestaurantsDialog } from "@/components/AddRestaurantsDialog";
 import { TrackedListsDialog } from "@/components/TrackedListsDialog";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Check, List, ListRestart, Pencil, Plus, Share2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  FileText,
+  List,
+  ListRestart,
+  Pencil,
+  Plus,
+  Share2,
+} from "lucide-react";
 import { ShareDialog } from "@/components/ShareDialog";
 import { fetchCloudList, pushDiff, subscribeList, syncWithLocal } from "@/lib/cloud-sync";
 // Location filter helpers (pure, unit-tested) and opening-hours status logic.
@@ -19,6 +47,12 @@ import { filterByLocation, locationLabel, locationSuggestions } from "@/lib/loca
 import { computeOpenStatus, describeStatus, type OpenStatus } from "@/lib/opening-hours";
 import { getPlaceHours } from "@/lib/gmaps-resolver.functions";
 
+/**
+ * Main Roulette Page Component
+ * 
+ * @param list - Unique slug or group code identifying the active restaurant list (e.g. "default", "office-lunch")
+ * @param initialView - Optional initial view flag (e.g. "all" opens the places list on load)
+ */
 export function RoulettePage({ list, initialView }: { list: string; initialView?: string | undefined }) {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [picked, setPicked] = useState<Restaurant | null>(null);
@@ -29,10 +63,12 @@ export function RoulettePage({ list, initialView }: { list: string; initialView?
   const latest = useRef<Restaurant[]>([]);
   latest.current = restaurants;
 
+  // Initialize and synchronize list data across local storage and cloud database
   useEffect(() => {
     let cancelled = false;
     const local = loadRestaurants(list);
     setRestaurants(local);
+
     const refresh = () =>
       fetchCloudList(list)
         .then((cloud) => {
@@ -41,6 +77,7 @@ export function RoulettePage({ list, initialView }: { list: string; initialView?
           saveRestaurants(cloud, list);
         })
         .catch(() => {});
+
     syncWithLocal(list, local)
       .then((merged) => {
         if (cancelled) return;
@@ -48,6 +85,7 @@ export function RoulettePage({ list, initialView }: { list: string; initialView?
         saveRestaurants(merged, list);
       })
       .catch(() => {});
+
     const unsubscribe = subscribeList(list, refresh);
     return () => {
       cancelled = true;
@@ -55,6 +93,7 @@ export function RoulettePage({ list, initialView }: { list: string; initialView?
     };
   }, [list]);
 
+  // Persists local restaurant changes and synchronizes deltas to the cloud
   const update = (next: Restaurant[]) => {
     const prev = latest.current;
     setRestaurants(next);
@@ -85,6 +124,7 @@ export function RoulettePage({ list, initialView }: { list: string; initialView?
     return () => { cancelled = true; };
   }, [picked, spinning]);
 
+  // Spin animation: rapidly selects candidates for ~1.3 seconds before picking the final result
   const spin = () => {
     if (candidates.length === 0 || spinning) return;
     const randomOne = () =>
@@ -104,6 +144,7 @@ export function RoulettePage({ list, initialView }: { list: string; initialView?
     }, 90);
   };
 
+  // Records a visit timestamp to history and opens Google Maps in a new tab
   const letsGo = () => {
     if (!picked || recorded) return;
     const visitedAt = new Date().toISOString();
@@ -120,6 +161,7 @@ export function RoulettePage({ list, initialView }: { list: string; initialView?
 
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center px-4">
+      {/* Top-Right Settings Gear Button */}
       <button
         onClick={() => setSettingsOpen(true)}
         aria-label="Settings"
@@ -129,6 +171,7 @@ export function RoulettePage({ list, initialView }: { list: string; initialView?
       </button>
 
       {picked && !spinning ? (
+        /* Selected Restaurant Result View */
         <div className="animate-pop-in flex w-full max-w-xl flex-col items-center text-center">
           <p className="mb-3 text-sm font-medium uppercase tracking-widest text-muted-foreground">
             You're going to
@@ -178,37 +221,47 @@ export function RoulettePage({ list, initialView }: { list: string; initialView?
           </div>
         </div>
       ) : (
+        /* Pre-Spin Roulette Action View */
         <div className="flex w-full max-w-xl flex-col items-center">
-        <Button
-          onClick={spin}
-          disabled={candidates.length === 0}
-          className="btn-chunky h-auto max-w-full whitespace-normal rounded-3xl bg-primary px-10 py-8 font-display text-3xl font-semibold leading-snug text-primary-foreground disabled:opacity-50"
-        >
-          {spinning ? (picked ? displayName(picked) : "…") : "Where To Eat/Drink Today?"}
-        </Button>
-        {/* Pre-spin location filter: match counter, quick chips, then the input. Hidden while spinning. */}
-        {!spinning && restaurants.length > 0 && (
-          <div className="mt-6 flex w-full max-w-sm flex-col items-center gap-3">
-            <p className="text-sm text-muted-foreground">{candidates.length} of {restaurants.length} places match</p>
-            {suggestions.length > 0 && (
-              <div className="flex flex-wrap justify-center gap-2">
-                {suggestions.map((s) => (
-                  <button key={s} onClick={() => setLocationQuery(locationQuery === s ? "" : s)} aria-pressed={locationQuery === s}
-                    className={`rounded-full border px-3 py-1 text-xs ${locationQuery === s ? "border-primary bg-primary text-primary-foreground" : "border-input bg-card text-foreground"}`}>
-                    {s}
-                  </button>
-                ))}
-              </div>
-            )}
-            <input
-              value={locationQuery}
-              onChange={(e) => setLocationQuery(e.target.value)}
-              placeholder="Limit to city, province, postal code or country"
-              aria-label="Location filter"
-              className="w-full rounded-xl border border-input bg-card px-4 py-2 text-sm text-foreground"
-            />
-          </div>
-        )}
+          <Button
+            onClick={spin}
+            disabled={candidates.length === 0}
+            className="btn-chunky h-auto max-w-full whitespace-normal rounded-3xl bg-primary px-10 py-8 font-display text-3xl font-semibold leading-snug text-primary-foreground disabled:opacity-50"
+          >
+            {spinning ? (picked ? displayName(picked) : "…") : "Where To Eat/Drink Today?"}
+          </Button>
+
+          {/* Pre-spin location filter: match counter, quick chips, then the input. Hidden while spinning. */}
+          {!spinning && restaurants.length > 0 && (
+            <div className="mt-6 flex w-full max-w-sm flex-col items-center gap-3">
+              <p className="text-sm text-muted-foreground">{candidates.length} of {restaurants.length} places match</p>
+              {suggestions.length > 0 && (
+                <div className="flex flex-wrap justify-center gap-2">
+                  {suggestions.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setLocationQuery(locationQuery === s ? "" : s)}
+                      aria-pressed={locationQuery === s}
+                      className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                        locationQuery === s
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-input bg-card text-foreground"
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <input
+                value={locationQuery}
+                onChange={(e) => setLocationQuery(e.target.value)}
+                placeholder="Limit to city, province, postal code or country"
+                aria-label="Location filter"
+                className="w-full rounded-xl border border-input bg-card px-4 py-2 text-sm text-foreground"
+              />
+            </div>
+          )}
         </div>
       )}
 
@@ -218,6 +271,7 @@ export function RoulettePage({ list, initialView }: { list: string; initialView?
         </p>
       )}
 
+      {/* Slide-out Settings Panel Drawer */}
       {settingsOpen && (
         <SettingsPanel
           restaurants={restaurants}
@@ -228,11 +282,16 @@ export function RoulettePage({ list, initialView }: { list: string; initialView?
           onTracked={() => { setSettingsOpen(false); setTrackedOpen(true); }}
         />
       )}
+
+      {/* Tracked Google Maps Lists Dialog */}
       <TrackedListsDialog open={trackedOpen} onOpenChange={setTrackedOpen} list={list} onSynced={setRestaurants} />
     </div>
   );
 }
 
+/**
+ * Formats visit counts and relative/formatted last visit date for display.
+ */
 function formatVisitInfo(r: Restaurant): string {
   const count = r.visits ?? 0;
   if (!r.lastVisitedAt) return "Never visited";
@@ -246,6 +305,9 @@ function formatVisitInfo(r: Restaurant): string {
   return `${count} visit${count === 1 ? "" : "s"}${shown}`;
 }
 
+/**
+ * Slide-out Settings drawer component
+ */
 function SettingsPanel({
   restaurants,
   list,
@@ -267,6 +329,7 @@ function SettingsPanel({
   const [addOpen, setAddOpen] = useState(false);
   const [editing, setEditing] = useState(false);
 
+  // Memoized sorting of restaurants based on visits count or latest visit date
   const sorted = useMemo(() => {
     const list = [...restaurants];
     if (sortMode === "visits") {
@@ -291,27 +354,67 @@ function SettingsPanel({
     onChange(restaurants.filter((r) => r.id !== id));
   };
 
-
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
+      {/* Share and Add Dialogs */}
       <ShareDialog open={shareOpen} onOpenChange={setShareOpen} list={list} restaurants={restaurants} />
       <AddRestaurantsDialog list={list} open={addOpen} onOpenChange={setAddOpen} restaurants={restaurants} onAdd={(added) => onChange([...restaurants, ...added])} />
+
+      {/* Dimmed backdrop */}
       <button
         aria-label="Close settings"
         className="absolute inset-0 bg-foreground/30"
         onClick={onClose}
       />
+
+      {/* Slide-out Sheet Container */}
       <div className={`relative flex h-full w-full flex-col bg-card shadow-2xl ${showAll ? "max-w-3xl" : "max-w-md"}`}>
         <div className="flex items-center justify-between border-b px-6 py-4">
           <div className="flex min-w-0 items-center gap-1">
-            {showAll && <Button variant="ghost" size="icon" aria-label="Back to settings" title="Back to settings" onClick={() => { setShowAll(false); setEditing(false); }}><ArrowLeft /></Button>}
-            <h2 className="font-display text-xl font-semibold">{showAll ? "All restaurants" : "Your restaurants"}</h2>
-            {showAll ? (
-              <Button variant={editing ? "default" : "ghost"} size="icon" aria-label={editing ? "Done editing" : "Edit restaurants"} title={editing ? "Done editing" : "Edit"} onClick={() => setEditing(!editing)}>{editing ? <Check /> : <Pencil />}</Button>
-            ) : (
-              <Button variant="ghost" size="icon" aria-label="Add places" title="Add places" onClick={() => setAddOpen(true)}><Plus /></Button>
+            {showAll && (
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Back to settings"
+                title="Back to settings"
+                onClick={() => { setShowAll(false); setEditing(false); }}
+              >
+                <ArrowLeft />
+              </Button>
             )}
-            <Button variant="ghost" size="icon" aria-label="Share list" title="Share list" onClick={() => setShareOpen(true)}><Share2 /></Button>
+            <h2 className="font-display text-xl font-semibold">
+              {showAll ? "All restaurants" : "Your restaurants"}
+            </h2>
+            {showAll ? (
+              <Button
+                variant={editing ? "default" : "ghost"}
+                size="icon"
+                aria-label={editing ? "Done editing" : "Edit restaurants"}
+                title={editing ? "Done editing" : "Edit"}
+                onClick={() => setEditing(!editing)}
+              >
+                {editing ? <Check /> : <Pencil />}
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Add places"
+                title="Add places"
+                onClick={() => setAddOpen(true)}
+              >
+                <Plus />
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Share list"
+              title="Share list"
+              onClick={() => setShareOpen(true)}
+            >
+              <Share2 />
+            </Button>
           </div>
           <button
             onClick={onClose}
@@ -323,74 +426,103 @@ function SettingsPanel({
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 py-4">
-          {showAll ? <RestaurantVisitList restaurants={restaurants} editing={editing} onChange={onChange} /> : <>
-          <div className="mb-3 flex gap-2">
-            <button
-              onClick={() => setSortMode("visits")}
-              aria-pressed={sortMode === "visits"}
-              className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
-                sortMode === "visits"
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-input bg-background text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Most visited
-            </button>
-            <button
-              onClick={() => setSortMode("lastVisit")}
-              aria-pressed={sortMode === "lastVisit"}
-              className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
-                sortMode === "lastVisit"
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-input bg-background text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Last visit
-            </button>
-          </div>
-
-          <ul className="space-y-2">
-            {sorted.slice(0, 5).map((r) => (
-              <li
-                key={r.id}
-                className="flex items-center justify-between rounded-xl border bg-background px-4 py-3"
-              >
-                <div className="min-w-0 flex-1 break-words">
-                  <p className="font-medium">{displayName(r)}</p>
-                  {r.googleMapsUrl && (
-                    <a
-                      href={r.googleMapsUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-primary underline"
-                    >
-                      Google Maps
-                    </a>
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    {formatVisitInfo(r)}
-                  </p>
-                </div>
+          {showAll ? (
+            <RestaurantVisitList restaurants={restaurants} editing={editing} onChange={onChange} />
+          ) : (
+            <>
+              {/* Sort Mode Filter Buttons */}
+              <div className="mb-3 flex gap-2">
                 <button
-                  onClick={() => removeOne(r.id)}
-                  aria-label={`Remove ${displayName(r)}`}
-                  className="text-muted-foreground hover:text-destructive"
+                  onClick={() => setSortMode("visits")}
+                  aria-pressed={sortMode === "visits"}
+                  className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                    sortMode === "visits"
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-input bg-background text-muted-foreground hover:text-foreground"
+                  }`}
                 >
-                  ✕
+                  Most visited
                 </button>
-              </li>
-            ))}
-            {restaurants.length === 0 && (
-              <p className="py-6 text-center text-sm text-muted-foreground">
-                No restaurants yet. Tap + to add places.
-              </p>
-            )}
-          </ul>
+                <button
+                  onClick={() => setSortMode("lastVisit")}
+                  aria-pressed={sortMode === "lastVisit"}
+                  className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                    sortMode === "lastVisit"
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-input bg-background text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Last visit
+                </button>
+              </div>
 
-          <Button variant="outline" className="mt-4 w-full" onClick={() => setShowAll(true)}><List />All restaurants ({restaurants.length})</Button>
-          <Button variant="outline" className="mt-2 h-auto w-full whitespace-normal" onClick={onTracked}><ListRestart />Tracked Google Maps Lists</Button>
+              {/* Compact Top-5 Restaurants List */}
+              <ul className="space-y-2">
+                {sorted.slice(0, 5).map((r) => (
+                  <li
+                    key={r.id}
+                    className="flex items-center justify-between rounded-xl border bg-background px-4 py-3"
+                  >
+                    <div className="min-w-0 flex-1 break-words">
+                      <p className="font-medium">{displayName(r)}</p>
+                      {r.googleMapsUrl && (
+                        <a
+                          href={r.googleMapsUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-primary underline"
+                        >
+                          Google Maps
+                        </a>
+                      )}
+                      <p className="text-xs text-muted-foreground">
+                        {formatVisitInfo(r)}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => removeOne(r.id)}
+                      aria-label={`Remove ${displayName(r)}`}
+                      className="text-muted-foreground hover:text-destructive"
+                    >
+                      ✕
+                    </button>
+                  </li>
+                ))}
+                {restaurants.length === 0 && (
+                  <p className="py-6 text-center text-sm text-muted-foreground">
+                    No restaurants yet. Tap + to add places.
+                  </p>
+                )}
+              </ul>
 
-          </>}
+              {/* Settings Drawer Action Buttons */}
+              <Button
+                variant="outline"
+                className="mt-4 w-full"
+                onClick={() => setShowAll(true)}
+              >
+                <List className="h-4 w-4" />
+                All restaurants ({restaurants.length})
+              </Button>
+              <Button
+                variant="outline"
+                className="mt-2 h-auto w-full whitespace-normal"
+                onClick={onTracked}
+              >
+                <ListRestart className="h-4 w-4" />
+                Tracked Google Maps Lists
+              </Button>
+
+              {/* Development Roadmap & Releases History Page Link */}
+              <Link
+                to="/roadmap"
+                className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+              >
+                <FileText className="h-4 w-4" />
+                Development Roadmap & Releases History
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -424,17 +556,3 @@ function SpinIcon() {
     </svg>
   );
 }
-
-// 
-// function ReloadIcon() {
-//   return (
-//     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-//       <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
-//       <path d="M21 3v5h-5" />
-//       <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
-//       <path d="M3 21v-5h5" />
-//     </svg>
-//   );
-// 
-// }
-// 
