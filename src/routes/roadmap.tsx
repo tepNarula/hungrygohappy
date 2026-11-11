@@ -39,7 +39,7 @@ import rawRoadmapContent from "../../ROADMAP.md?raw";
 export const Route = createFileRoute("/roadmap")({
   head: () => ({
     meta: [
-      { title: "Development Roadmap & Releases History | Hungry Roulette" },
+      { title: "Development Roadmap & Releases History | HungryGoHappy" },
       {
         property: "og:title",
         content: "Development Roadmap & Releases History | Hungry Roulette",
@@ -231,7 +231,7 @@ export function RoadmapPage() {
             </Button>
             <div className="h-4 w-px bg-border hidden sm:block" />
             <h1 className="font-display text-lg font-bold tracking-tight sm:text-xl">
-              Roadmap & Releases
+              Development Roadmap & Releases History
             </h1>
           </div>
 
