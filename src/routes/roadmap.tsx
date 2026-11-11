@@ -217,28 +217,16 @@ export function RoadmapPage() {
     <div className="min-h-screen bg-background text-foreground transition-colors">
       {/* Sticky Sub-Header */}
       <header className="sticky top-0 z-40 border-b border-border bg-card/85 backdrop-blur-md">
-        <div className="mx-auto flex max-w-5xl">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleBack}
-            aria-label="Back to previous page"
-            className="gap-1.5 font-medium"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Back</span>
-          </Button>
-          <h2 className="font-display text-xl font-bold text-foreground">
-            Development Roadmap & Releases History
-          </h2>
-        </div>
+        <h1 className="font-display text-xl font-bold text-foreground">
+          Development Roadmap & Releases History
+        </h1>
       </header>
 
       {/* Main Content Area */}
       <main className="top-20 mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
         {/* Search Input Filter */}
         <div className="w-36 sm:w-60">
-          <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
              type="text"
              value={searchQuery}
