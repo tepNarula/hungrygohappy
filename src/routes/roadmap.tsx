@@ -217,6 +217,11 @@ export function RoadmapPage() {
     <div className="min-h-screen bg-background text-foreground transition-colors">
       {/* Sticky Sub-Header with Navigation and Search Controls */}
       <header className="sticky top-0 z-30 border-b border-border bg-card/85 backdrop-blur-md">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6" />
+      </header>
+
+      {/* Main Content Area */}
+      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <div className="flex items-center gap-2">
             <Button
@@ -250,10 +255,6 @@ export function RoadmapPage() {
             </div>
           </div>
         </div>
-      </header>
-
-      {/* Main Content Area */}
-      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
         {/* Sections Listing */}
         <div className="space-y-10">
           {filteredSections.map((sec) => {
