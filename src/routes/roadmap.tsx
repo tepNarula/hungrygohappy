@@ -218,18 +218,16 @@ export function RoadmapPage() {
       {/* Sticky Sub-Header */}
       <header className="sticky top-0 z-40 border-b border-border bg-card/85 backdrop-blur-md">
         <div className="mx-auto flex max-w-5xl">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleBack}
-              aria-label="Back to previous page"
-              className="gap-1.5 font-medium"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span>Back</span>
-            </Button>
-        </div>
-        <div className="mx-auto flex space-y-10">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleBack}
+            aria-label="Back to previous page"
+            className="gap-1.5 font-medium"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back</span>
+          </Button>
           <h1 className="font-display text-xl font-bold text-foreground">
             Development Roadmap & Releases History
           </h1>
