@@ -216,8 +216,8 @@ export function RoadmapPage() {
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors">
       {/* Sticky Sub-Header */}
-      <header className="sticky top-20 z-30 border-b border-border bg-card/85 backdrop-blur-md">
-        <div className="mx-auto flex max-w-5xl space-y-10">
+      <header className="sticky top-10 z-30 border-b border-border bg-card/85 backdrop-blur-md">
+        <div className="mx-auto flex max-w-5xl">
             <Button
               variant="ghost"
               size="sm"
@@ -232,7 +232,7 @@ export function RoadmapPage() {
       </header>
 
       {/* Main Content Area */}
-      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10 ">
+      <main className="top-20 mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
         <div className="mx-auto flex space-y-10">
             <h1 className="font-display text-xl font-bold text-foreground">
               Development Roadmap & Releases History
