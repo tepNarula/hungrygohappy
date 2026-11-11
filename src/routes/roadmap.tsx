@@ -219,11 +219,6 @@ export function RoadmapPage() {
         <h1 className="font-display">
           Development Roadmap & Releases History
         </h1>
-      </header>
-
-      {/* Main Content Area */}
-      <main className="top-10 mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
-        
         {/* Search Input Filter */}
         <div className="space-y-10">
           <Search className="left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -236,6 +231,10 @@ export function RoadmapPage() {
              className="w-full rounded-full border border-input bg-background py-1.5 pl-8 pr-3 text-xs sm:text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
            />
         </div>
+      </header>
+
+      {/* Main Content Area */}
+      <main className="top-10 mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
 
         {/* Sections Listing */}
         <div className="space-y-10">
