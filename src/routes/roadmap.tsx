@@ -220,8 +220,8 @@ export function RoadmapPage() {
           Development Roadmap & Releases History
         </h1>
         {/* Search Input Filter */}
-        <div className="space-y-0">
-          <Search className="left-5 top-5 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <div>
+          <Search className="left-5 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
              type="text"
              value={searchQuery}
