@@ -9,23 +9,19 @@
  * 4. Completed Features (reverse chronological delivery log with dates and details)
  * 
  * Includes:
- * - Back navigation with fallback to the default roulette list (`/default`).
- * - Real-time keyword filter across all sections.
- * - [implemented; not enabled] Quick-copy button to copy the entire markdown source for GitHub commits.
+ * - Floating sticky header featuring page title with the real-time keyword filter repositioned below it.
  * - TanStack Start route head() SEO and OpenGraph metadata.
  */
 
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import {
-  ArrowLeft,
   Search,
   CheckCircle2,
   Clock,
   ShieldAlert,
   Sparkles,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 // Import the raw ROADMAP.md file content directly at compile-time via Vite's ?raw query
 import rawRoadmapContent from "../../ROADMAP.md?raw";
@@ -167,9 +163,7 @@ function parseRoadmapMarkdown(content: string): RoadmapSection[] {
  * Main Roadmap & Releases History Page Component
  */
 export function RoadmapPage() {
-  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
-  const [copied, setCopied] = useState(false);
 
   // Parse raw markdown once into structured sections
   const sections = useMemo(() => parseRoadmapMarkdown(rawRoadmapContent), []);
@@ -192,49 +186,18 @@ export function RoadmapPage() {
       .filter((sec) => sec.items.length > 0);
   }, [sections, searchQuery]);
 
-  // Handler: Copy raw markdown for GitHub commits
-  const handleCopyRaw = async () => {
-    try {
-      await navigator.clipboard.writeText(rawRoadmapContent);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.warn("Unable to copy roadmap text:", err);
-    }
-  };
-
-  // Safe back navigation: returns to previous browser history or defaults to /default
-  const handleBack = () => {
-    if (typeof window !== "undefined" && window.history.length > 1) {
-      window.history.back();
-    } else {
-      router.navigate({ to: "/$list", params: { list: "default" } });
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors">
-      {/* Sticky Sub-Header */}
+      {/* Sticky Sub-Header with Title and Repositioned Search Bar */}
       <header className="sticky top-0 z-40 border-b border-border bg-card/85 backdrop-blur-md px-4 py-3 sm:px-6">
-        <div className="mx-auto flex max-w-5xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleBack}
-              aria-label="Back to previous page"
-              className="gap-1.5 font-medium"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span>Back</span>
-            </Button>
-            <h1 className="font-display text-lg font-bold text-foreground sm:text-xl">
-              Development Roadmap & Releases History
-            </h1>
-          </div>
+        <div className="mx-auto flex max-w-5xl flex-col gap-2.5">
+          {/* Page Title */}
+          <h1 className="font-display text-lg font-bold text-foreground sm:text-xl text-center">
+            Development Roadmap & Releases History
+          </h1>
 
-          {/* Search Input Filter */}
-          <div className="relative w-full sm:w-64">
+          {/* Search Input Filter positioned directly below title */}
+          <div className="relative w-full max-w-md">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
               type="text"
