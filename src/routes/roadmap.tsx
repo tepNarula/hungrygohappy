@@ -192,12 +192,12 @@ export function RoadmapPage() {
       <header className="sticky top-0 z-40 border-b border-border bg-card/85 backdrop-blur-md px-4 py-3 sm:px-6">
         <div className="mx-auto flex max-w-5xl flex-col gap-2.5">
           {/* Page Title */}
-          <h1 className="font-display text-lg font-bold text-foreground sm:text-xl text-center">
+          <h1 className="font-display text-foreground text-center">
             Development Roadmap & Releases History
           </h1>
 
         <div className="relative w-full">
-          <span className="font-display text-xl font-bold text-foreground">
+          <span className="font-display text-foreground">
             FYI: Full sourcecode is{" "}
               <a href="https://github.com/tepNarula/hungrygohappy"
               target="_blank" rel="noopener noreferrer"
