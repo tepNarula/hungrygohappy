@@ -9,12 +9,13 @@
  * 4. Completed Features (reverse chronological delivery log with dates and details)
  * 
  * Includes:
+ * - Back navigation with fallback to the default roulette list (`/default`).
  * - Real-time keyword filter across all sections.
  * - [implemented; not enabled] Quick-copy button to copy the entire markdown source for GitHub commits.
  * - TanStack Start route head() SEO and OpenGraph metadata.
  */
 
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import {
   ArrowLeft,
@@ -23,9 +24,6 @@ import {
   Clock,
   ShieldAlert,
   Sparkles,
-  Copy,
-  Check,
-  ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -61,15 +59,16 @@ export const Route = createFileRoute("/roadmap")({
 interface RoadmapItem {
   id: string;
   completed: boolean;
-  date?: string;
+  date?: string | undefined;
   title: string;
-  badge?: "Critical" | "Warning" | "Info";
+  badge?: "Critical" | "Warning" | "Info" | undefined;
   subItems: string[];
   rawText: string;
 }
 
 interface RoadmapSection {
   title: string;
+  description: string;
   icon: typeof Sparkles;
   items: RoadmapItem[];
 }
@@ -155,6 +154,7 @@ function parseRoadmapMarkdown(content: string): RoadmapSection[] {
 
     sections.push({
       title: sectionTitle,
+      description,
       icon,
       items,
     });
@@ -215,25 +215,41 @@ export function RoadmapPage() {
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors">
       {/* Sticky Sub-Header */}
-      <header className="sticky text-center top-0 z-40 border-b border-border bg-card/85 backdrop-blur-md">
-        <h1 className="font-display text-xl font-bold text-foreground">
-          Development Roadmap & Releases History
-        </h1>
-        {/* Search Input Filter */}
-          <Search className="left-5 h-4 w-4 text-muted-foreground" />
+      <header className="sticky top-0 z-40 border-b border-border bg-card/85 backdrop-blur-md px-4 py-3 sm:px-6">
+        <div className="mx-auto flex max-w-5xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleBack}
+              aria-label="Back to previous page"
+              className="gap-1.5 font-medium"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back</span>
+            </Button>
+            <h1 className="font-display text-lg font-bold text-foreground sm:text-xl">
+              Development Roadmap & Releases History
+            </h1>
+          </div>
+
+          {/* Search Input Filter */}
+          <div className="relative w-full sm:w-64">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
-             type="text"
-             value={searchQuery}
-             onChange={(e) => setSearchQuery(e.target.value)}
-             placeholder="Filter roadmap items..."
-             aria-label="Filter roadmap items"
-             className="w-full rounded-full border border-input bg-background py-1.5 pl-8 pr-3 text-xs sm:text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-           />
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Filter roadmap items..."
+              aria-label="Filter roadmap items"
+              className="w-full rounded-full border border-input bg-background py-1.5 pl-9 pr-3 text-xs sm:text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+          </div>
+        </div>
       </header>
 
       {/* Main Content Area */}
-      <main className="top-10 mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
-
+      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
         {/* Sections Listing */}
         <div className="space-y-10">
           {filteredSections.map((sec) => {
@@ -334,5 +350,3 @@ export function RoadmapPage() {
     </div>
   );
 }
-
-export default RoadmapPage;
