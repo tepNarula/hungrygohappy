@@ -213,6 +213,18 @@ export function RoadmapPage() {
 
       {/* Main Content Area */}
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
+        <div className="space-y-10">
+          <h4 className="font-display text-xl font-bold text-foreground">
+            FYI: Full sourcecode is{" "}
+              <a href="https://github.com/tepNarula/hungrygohappy"
+              target="_blank" rel="noopener noreferrer"
+              className="text-primary font-medium underline underline-offset-4 hover:opacity-80"
+            >
+              published to github
+            </a>
+          </h4>
+        </div>
+        
         {/* Sections Listing */}
         <div className="space-y-10">
           {filteredSections.map((sec) => {
