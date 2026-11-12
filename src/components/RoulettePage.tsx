@@ -516,6 +516,8 @@ function SettingsPanel({
               {/* Development Roadmap & Releases History Page Link */}
               <Link
                 to="/roadmap"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
               >
                 <FileText className="h-4 w-4" />
