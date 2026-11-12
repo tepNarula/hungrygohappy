@@ -50,12 +50,12 @@ const FAQS: FaqItem[] = [
     q: "Can I get the sourcecode; and Is there an active development plan?",
     a: [
       <span>
-        Yes! Full sourcecode is published to{" "}
+        Yes! Full sourcecode is{" "}
         <a href="https://github.com/tepNarula/hungrygohappy"
           target="_blank" rel="noopener noreferrer"
           className="text-primary font-medium underline underline-offset-4 hover:opacity-80"
         >
-          github
+          published to github
         </a>; and the{" "}
         <a href="/roadmap"
           target="_blank" rel="noopener noreferrer"
