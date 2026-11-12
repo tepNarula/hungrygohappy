@@ -196,6 +196,18 @@ export function RoadmapPage() {
             Development Roadmap & Releases History
           </h1>
 
+        <div className="relative w-full">
+          <span className="font-display text-xl font-bold text-foreground">
+            FYI: Full sourcecode is{" "}
+              <a href="https://github.com/tepNarula/hungrygohappy"
+              target="_blank" rel="noopener noreferrer"
+              className="text-primary font-medium underline underline-offset-4 hover:opacity-80"
+            >
+              published to github
+            </a>
+          </span>
+        </div>
+
           {/* Search Input Filter positioned directly below title */}
           <div className="relative w-full max-w-md">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -212,19 +224,7 @@ export function RoadmapPage() {
       </header>
 
       {/* Main Content Area */}
-      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
-        <div className="space-y-10">
-          <h4 className="font-display text-xl font-bold text-foreground">
-            FYI: Full sourcecode is{" "}
-              <a href="https://github.com/tepNarula/hungrygohappy"
-              target="_blank" rel="noopener noreferrer"
-              className="text-primary font-medium underline underline-offset-4 hover:opacity-80"
-            >
-              published to github
-            </a>
-          </h4>
-        </div>
-        
+      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">        
         {/* Sections Listing */}
         <div className="space-y-10">
           {filteredSections.map((sec) => {
