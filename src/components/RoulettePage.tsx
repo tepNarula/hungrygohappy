@@ -174,7 +174,7 @@ export function RoulettePage({ list, initialView }: { list: string; initialView?
         /* Selected Restaurant Result View */
         <div className="animate-pop-in flex w-full max-w-xl flex-col items-center text-center">
           <p className="mb-3 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-            You're going to
+            How about:
           </p>
           <h1 className="font-display text-3xl font-bold leading-tight text-foreground">
             {displayName(picked)}
