@@ -14,9 +14,11 @@ Design Goals:
 """
 
 import asyncio
+import calendar
 import datetime
 import json
 import random
+import re
 import urllib.parse
 from dataclasses import asdict, dataclass, field
 from typing import Dict, List, Optional, Tuple
@@ -179,7 +181,7 @@ async def record_visit_cloud(restaurant: Restaurant) -> None:
 
 
 # ==============================================================================
-# 3. UPSTREAM RESOLVER & PLACE ID NORMALIZATION
+# 3. UPSTREAM RESOLVER, PLACE ID & SECURITY UTILITIES
 # ==============================================================================
 
 def to_canonical_place_id(high: int, low: int) -> str:
@@ -190,6 +192,44 @@ def to_canonical_place_id(high: int, low: int) -> str:
     u_high = high & 0xFFFFFFFFFFFFFFFF
     u_low = low & 0xFFFFFFFFFFFFFFFF
     return f"0x{u_high:x}:0x{u_low:x}"
+
+
+def normalize_place_id(value: Optional[str]) -> Optional[str]:
+    """
+    Normalize canonical IDs and legacy IDs containing a signed hexadecimal half.
+    Keeps database rows imported before the unsigned fix usable without migrations.
+    """
+    if not isinstance(value, str):
+        return None
+    match = re.match(r"^0x(-?[0-9a-fA-F]{1,16}):0x(-?[0-9a-fA-F]{1,16})$", value)
+    if not match:
+        return None
+    try:
+        parts = []
+        for part in [match.group(1), match.group(2)]:
+            val = -int(part[1:], 16) if part.startswith("-") else int(part, 16)
+            parts.append(f"{val & 0xFFFFFFFFFFFFFFFF:x}")
+        return f"0x{parts[0]}:0x{parts[1]}"
+    except Exception:
+        return None
+
+
+def truncate_for_display(text: str, max_chars: int = 60) -> str:
+    """
+    Truncate URL or label text for compact UI display with trailing ellipsis.
+    Matches the web application's 60-character threshold from src/lib/restaurants.ts.
+    """
+    return f"{text[:max_chars]}..." if len(text) > max_chars else text
+
+
+def safe_spreadsheet_text(v: str) -> str:
+    """
+    Neutralize spreadsheet formula injection characters (=, +, -, @, \\t, \\r).
+    Ensures exported CSVs or user-entered strings cannot trigger formula execution.
+    """
+    if v and v[0] in ("=", "+", "-", "@", "\t", "\r"):
+        return f"'{v}"
+    return v
 
 
 async def resolve_and_extract_place(url: str) -> Tuple[str, str, Optional[str]]:
@@ -229,7 +269,109 @@ async def resolve_and_extract_place(url: str) -> Tuple[str, str, Optional[str]]:
 
 
 # ==============================================================================
-# 4. FLET APPLICATION USER INTERFACE
+# 4. LOCATION FILTERING & RECENCY CALCULATIONS
+# ==============================================================================
+
+def filter_by_location(restaurants: List[Restaurant], query: str) -> List[Restaurant]:
+    """
+    Return restaurants matching a case-insensitive location substring.
+    Searches across city, province, postal_code, and country fields.
+    """
+    clean_q = (query or "").strip().lower()
+    if not clean_q:
+        return list(restaurants)
+    matched: List[Restaurant] = []
+    for r in restaurants:
+        loc_str = " ".join(filter(None, [r.city, r.province, r.postal_code, r.country])).lower()
+        if clean_q in loc_str:
+            matched.append(r)
+    return matched
+
+
+def location_label(r: Restaurant) -> str:
+    """
+    Format a restaurant's location components into a standardized display label:
+    '{city}, {province} {postal_code}, {country}'.
+    """
+    parts = []
+    prov_postal = f"{r.province or ''} {r.postal_code or ''}".strip()
+    first = ", ".join(filter(None, [r.city, prov_postal]))
+    if first:
+        parts.append(first)
+    if r.country:
+        parts.append(r.country)
+    return ", ".join(parts) if parts else ""
+
+
+def recent_visit_count(r: Restaurant, now: Optional[datetime.datetime] = None) -> int:
+    """
+    Calculate the number of visits within the trailing 3 calendar months.
+    Conforms strictly to the web application's recentVisitCount() algorithm.
+    """
+    if now is None:
+        now = datetime.datetime.now(datetime.timezone.utc)
+    dates = r.visit_dates if r.visit_dates else ([r.last_visited_at] if r.last_visited_at else [])
+    if not dates:
+        return 0
+
+    year = now.year
+    month = now.month - 3
+    day = now.day
+    while month <= 0:
+        month += 12
+        year -= 1
+    max_day = calendar.monthrange(year, month)[1]
+    cutoff = datetime.datetime(year, month, min(day, max_day), now.hour, now.minute, now.second, now.microsecond, tzinfo=now.tzinfo)
+    count = 0
+    for d in dates:
+        try:
+            dt = datetime.datetime.fromisoformat(d.replace("Z", "+00:00"))
+            if cutoff <= dt <= now:
+                count += 1
+        except Exception:
+            pass
+    return count
+
+
+# ==============================================================================
+# 5. SYNC PLANNER (PRESERVES CUSTOM NAMES)
+# ==============================================================================
+
+@dataclass
+class SyncPlan:
+    """Container for additions and updates produced by the Google Maps sync planner."""
+    added: List[dict]
+    updates: List[dict]
+
+
+def plan_gmaps_sync(current: List[Restaurant], incoming: List[dict], source_id: str) -> SyncPlan:
+    """
+    Plan updates for a tracked Google Maps list without overwriting custom place names.
+    Preserves user edits: only updates name if existing name is blank or equals existing gmaps_name.
+    """
+    by_url = {r.google_maps_url: r for r in current}
+    added: List[dict] = []
+    updates: List[dict] = []
+    for inc in incoming:
+        url = inc["google_maps_url"]
+        existing = by_url.get(url)
+        if not existing:
+            added.append({**inc, "source_list_id": source_id})
+        else:
+            name_to_keep = existing.name
+            if not existing.name or existing.name == existing.gmaps_name:
+                name_to_keep = inc.get("name") or existing.name
+            updates.append({
+                "google_maps_url": url,
+                "name": name_to_keep,
+                "gmaps_name": inc.get("name"),
+                "source_list_id": source_id,
+            })
+    return SyncPlan(added=added, updates=updates)
+
+
+# ==============================================================================
+# 6. FLET APPLICATION USER INTERFACE
 # ==============================================================================
 
 def main(page: ft.Page) -> None:
@@ -237,7 +379,6 @@ def main(page: ft.Page) -> None:
     Main application UI setup and lifecycle handler for Flet.
     Initializes Material 3 styling, theme modes, and responsive layout structure.
     """
-    # Page configuration & branding
     page.title = "HungryGoHappy"
     page.theme_mode = ft.ThemeMode.DARK
     page.theme = ft.Theme(color_scheme_seed="#EA580C")  # Signature burnt orange
@@ -277,6 +418,16 @@ def main(page: ft.Page) -> None:
         text_align=ft.TextAlign.CENTER,
     )
 
+    # Prompt label matching the web app's result view ("HOW ABOUT:")
+    prompt_label = ft.Text(
+        "HOW ABOUT:",
+        size=13,
+        weight=ft.FontWeight.W_900,
+        color=ft.Colors.GREY_400,
+        text_align=ft.TextAlign.CENTER,
+        visible=False,
+    )
+
     place_name_text = ft.Text(
         "Ready to spin!",
         size=26,
@@ -307,25 +458,13 @@ def main(page: ft.Page) -> None:
 
     def update_candidate_count() -> None:
         """Update the UI counter reflecting how many places match the location filter."""
-        candidates = get_filtered_candidates()
+        candidates = filter_by_location(restaurants, filter_field.value)
         total = len(restaurants)
         if filter_field.value and filter_field.value.strip():
             candidate_count_text.value = f"{len(candidates)} of {total} places match filter"
         else:
             candidate_count_text.value = f"{total} places on this list"
         page.update()
-
-    def get_filtered_candidates() -> List[Restaurant]:
-        """Return candidate spots matching the current case-insensitive location query."""
-        query = (filter_field.value or "").strip().lower()
-        if not query:
-            return restaurants
-        matched: List[Restaurant] = []
-        for r in restaurants:
-            loc_str = " ".join(filter(None, [r.city, r.province, r.postal_code, r.country])).lower()
-            if query in loc_str:
-                matched.append(r)
-        return matched
 
     async def reload_restaurants(e=None) -> None:
         """
@@ -336,6 +475,7 @@ def main(page: ft.Page) -> None:
         nonlocal current_list_code, restaurants, current_picked
         current_list_code = list_code_field.value.strip().lower() or "default"
         current_picked = None
+        prompt_label.visible = False
         lets_go_btn.visible = False
         place_name_text.value = "Ready to spin!"
         location_subtext.value = ""
@@ -367,7 +507,7 @@ def main(page: ft.Page) -> None:
         Respects active location filter and picks only from qualifying places.
         """
         nonlocal is_spinning, current_picked
-        candidates = get_filtered_candidates()
+        candidates = filter_by_location(restaurants, filter_field.value)
         if not candidates:
             page.snack_bar = ft.SnackBar(ft.Text("No places match your location filter!"))
             page.snack_bar.open = True
@@ -378,6 +518,7 @@ def main(page: ft.Page) -> None:
             return
 
         is_spinning = True
+        prompt_label.visible = False
         lets_go_btn.visible = False
         spin_button.disabled = True
 
@@ -387,17 +528,17 @@ def main(page: ft.Page) -> None:
             temp_pick = random.choice(candidates)
             place_name_text.value = temp_pick.name or "Picking…"
             page.update()
-            # Gradually increase delay to simulate a mechanical wheel slowing down
             await asyncio.sleep(0.04 + (step * 0.012))
 
         # Final chosen restaurant
         current_picked = random.choice(candidates)
+        prompt_label.visible = True
         place_name_text.value = current_picked.name or "Unnamed Place"
-        loc_components = filter(None, [current_picked.city, current_picked.province, current_picked.country])
-        location_subtext.value = ", ".join(loc_components)
+        location_subtext.value = location_label(current_picked)
 
         lets_go_btn.visible = True
-        lets_go_btn.text = f"Let's Go! (Visited {current_picked.visits}x)"
+        recent_count = recent_visit_count(current_picked)
+        lets_go_btn.text = f"Let's Go! (Visited {current_picked.visits}x, {recent_count} recent)"
         spin_button.disabled = False
         is_spinning = False
         page.update()
@@ -412,10 +553,7 @@ def main(page: ft.Page) -> None:
         if not current_picked:
             return
 
-        # Launch native navigation via Android Intent
         page.launch_url(current_picked.google_maps_url)
-
-        # Update visit state in Lovable Cloud PostgreSQL
         await record_visit_cloud(current_picked)
         save_local_list(page, current_list_code, restaurants)
 
@@ -442,6 +580,12 @@ def main(page: ft.Page) -> None:
         on_click=toggle_theme,
     )
 
+    roadmap_btn = ft.IconButton(
+        icon=ft.Icons.DESCRIPTION_OUTLINED,
+        tooltip="Development Roadmap",
+        on_click=lambda e: page.launch_url("https://hungrygohappy.lovable.app/roadmap"),
+    )
+
     # ---------------- Add Restaurant Dialog ----------------
 
     new_url_field = ft.TextField(
@@ -455,7 +599,7 @@ def main(page: ft.Page) -> None:
     )
 
     async def add_place_to_cloud(e) -> None:
-        """Resolve Google Maps link and insert new place row into Lovable Cloud."""
+        """Resolve Google Maps link, sanitize name, and insert new place row into Lovable Cloud."""
         target_url = new_url_field.value.strip()
         if not target_url:
             return
@@ -466,7 +610,8 @@ def main(page: ft.Page) -> None:
         page.update()
 
         resolved_url, extracted_name, place_id = await resolve_and_extract_place(target_url)
-        final_name = new_name_field.value.strip() or extracted_name
+        raw_name = new_name_field.value.strip() or extracted_name
+        final_name = safe_spreadsheet_text(raw_name)
 
         new_record = {
             "list_code": current_list_code,
@@ -540,6 +685,7 @@ def main(page: ft.Page) -> None:
                     tooltip="Add place",
                     on_click=lambda e: setattr(add_dialog, "open", True) or page.update(),
                 ),
+                roadmap_btn,
                 theme_btn,
             ],
             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
@@ -555,6 +701,7 @@ def main(page: ft.Page) -> None:
         ft.Container(
             content=ft.Column(
                 [
+                    prompt_label,
                     place_name_text,
                     location_subtext,
                     ft.Divider(height=12, color=ft.Colors.TRANSPARENT),
@@ -574,14 +721,12 @@ def main(page: ft.Page) -> None:
         ft.Container(spin_button, width=340, alignment=ft.alignment.center),
     )
 
-    # Trigger initial data synchronization on application launch
     page.run_task(reload_restaurants)
 
 
 # ==============================================================================
-# 5. ENTRY POINT
+# 7. ENTRY POINT
 # ==============================================================================
 
 if __name__ == "__main__":
-    # Launch Flet native application
     ft.app(target=main)
