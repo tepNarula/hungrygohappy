@@ -6,10 +6,8 @@
  * 1. Global <head> metadata, fonts (Fraunces & Inter), stylesheets, and favicon.
  * 2. Early inline anti-FOUC script ensuring dark mode defaults on initial visit
  *    without client-side hydration flicker.
- * 3. Top-left persistent display controls (<TopHeaderControls />) mounted globally.
- * 4. Responsive viewport container supporting simulated mobile frame mode
- *    (listening for `hungry:viewport-frame-change` events).
- * 5. TanStack QueryClientProvider, global <Toaster />, and root error/not-found boundaries.
+ * 3. Top-left persistent theme control (<TopHeaderControls />) mounted globally.
+ * 4. TanStack QueryClientProvider, global <Toaster />, and root error/not-found boundaries.
  */
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -22,16 +20,12 @@ import {
   Scripts,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import {
-  TopHeaderControls,
-  VIEWPORT_FRAME_EVENT,
-  getSavedViewportFrame,
-} from "../components/TopHeaderControls";
+import { TopHeaderControls } from "../components/TopHeaderControls";
 
 function NotFoundComponent() {
   return (
@@ -144,10 +138,6 @@ function RootShell({ children }: { children: ReactNode }) {
                 } else {
                   document.documentElement.classList.remove('dark');
                 }
-                var frame = localStorage.getItem('hungry_viewport_frame');
-                if (frame === 'mobile') {
-                  document.documentElement.setAttribute('data-viewport-frame', 'mobile');
-                }
               } catch (e) {}
             })();`,
           }}
@@ -164,46 +154,18 @@ function RootShell({ children }: { children: ReactNode }) {
 
 /**
  * Root component wrapping nested routes with QueryClientProvider,
- * top-left controls, and responsive viewport framing.
+ * top-left controls, and child route outlets.
  */
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  const [isMobileFrame, setIsMobileFrame] = useState<boolean>(false);
-
-  // Sync mobile frame state on client mount and subscribe to toggle events
-  useEffect(() => {
-    setIsMobileFrame(getSavedViewportFrame());
-
-    const handleFrameChange = (e: Event) => {
-      const customEvent = e as CustomEvent<{ isMobileFrame: boolean }>;
-      if (customEvent.detail && typeof customEvent.detail.isMobileFrame === "boolean") {
-        setIsMobileFrame(customEvent.detail.isMobileFrame);
-      }
-    };
-
-    window.addEventListener(VIEWPORT_FRAME_EVENT, handleFrameChange);
-    return () => {
-      window.removeEventListener(VIEWPORT_FRAME_EVENT, handleFrameChange);
-    };
-  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Top-left floating header controls (Theme & Viewport Switchers) */}
+      {/* Top-left floating header controls (Theme Switcher) */}
       <TopHeaderControls />
 
-      {/* 
-        Simulated mobile frame container:
-        When active, restricts maximum width to 420px with centered margin, subtle borders,
-        and elevation shadow to preview mobile layout behavior on wide screens.
-      */}
-      <div
-        className={
-          isMobileFrame
-            ? "mx-auto min-h-screen max-w-[420px] border-x border-border/80 shadow-2xl transition-all duration-200 bg-background"
-            : "min-h-screen w-full transition-all duration-200"
-        }
-      >
+      {/* Main page container */}
+      <div className="min-h-screen w-full transition-colors duration-200">
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
       </div>
