@@ -176,7 +176,7 @@ export function RoulettePage({ list, initialView }: { list: string; initialView?
           <p className="mb-3 text-sm font-medium uppercase tracking-widest text-muted-foreground">
             You're going to
           </p>
-          <h1 className="font-display text-5xl font-bold leading-tight text-foreground">
+          <h1 className="font-display text-3xl font-bold leading-tight text-foreground">
             {displayName(picked)}
           </h1>
           {/* Location metadata under the name, when known. */}
