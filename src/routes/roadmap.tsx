@@ -192,7 +192,7 @@ export function RoadmapPage() {
       <header className="sticky top-0 z-40 border-b border-border bg-card/85 backdrop-blur-md px-4 py-3 sm:px-6">
         <div className="mx-auto flex max-w-5xl flex-col gap-2.5">
           {/* Page Title */}
-          <h1 class="font-display text-2xl font-bold leading-tight">
+          <h1 className="font-display text-2xl font-bold leading-tight">
             Development Roadmap & Releases History
           </h1>
 
