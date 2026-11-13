@@ -1,3 +1,0 @@
-"""
-HungryGoHappy — Flet Companion Application
-"""
