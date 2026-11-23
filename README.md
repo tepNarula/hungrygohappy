@@ -1,50 +1,117 @@
-# HungryGoHappy
+# Roadmap
 
-**Live app**: https://hungrygohappy.lovable.app
+## Partially Implemented / Unverified
 
-Took https://hungry-roulette.lovable.app/ as a starting point and built on it further.
-
-Built with [Lovable](https://lovable.dev).
-
-___[Development Roadmap & Releases History](./ROADMAP.md)___
-
-___[Database Schema](./SCHEMA.md)___
-
-___[Flet Companion Application](./python-src/README.md)___
-
-___[Web Test Suite Documentation](./src/test/README.md)___
+- [ ] (2026-11-09) Location metadata & place opening hours pipeline:
+  - [x] (2026-11-09) Pre-spin location filter (match counter, city/province chips, text input) limits spin candidates — verified in browser (217 → 12 for "bangkok")
+  - [x] (2026-11-09) Result screen shows location under the name and an opening-status badge; "Back to Roulette" left of "Let's Go!" — verified in browser
+  - [x] (2026-11-09) Unit tests `src/test/location-filter.test.ts` (6 tests)
+  - [x] (2026-11-10) Fixed signed 64-bit Google place-ID conversion with `BigInt.asUintN`; legacy signed-hex IDs are normalized at lookup so existing rows need no migration
+  - [x] (2026-11-10) Added `src/test/gmaps-place-id.test.ts` (3 regression tests); full suite passes 28 tests across 8 files
+  - [ ] Live opening-hours badge remains unverified: the fixed legacy ID initially returned 7 days of hours in a direct helper check, but the app server receives Google HTTP 403 anti-abuse responses and the browser still shows "Hours unlisted"
+- [ ] (2026-11-03) Comprehensive educational code documentation:
+  - [x] Explanatory comments added to new test and utility files (including `cloud-sync`, `gmaps-resolver`, `gmaps-sync-plan`, `restaurants`, `refresh-gmaps-lists`, `location-filter`)
+  - [ ] Retrofit educational docstrings and control-flow explanations across all pre-existing source files
 
 ---
-## Architecture & Technology Stack
 
-### Application & Frontend
-- **React 19** (`react`, `react-dom` v19.2.0)
-- **TanStack Start** (`@tanstack/react-start` v1.168) — Full-stack framework with SSR and type-safe server functions (`createServerFn`)
-- **TanStack Router** (`@tanstack/react-router` v1.170) — Client-side and server-rendered type-safe file routing
-- **TanStack Query** (`@tanstack/react-query` v5.101) — Asynchronous state management and caching
-- **Tailwind CSS v4** (`@tailwindcss/vite` v4.2.1) — Modern CSS `@theme` tokens and OKLCH color palettes
-- **Radix UI Primitives** — Accessible unstyled dialog, accordion, radio-group, and popover components
-- **Lucide Icons** (`lucide-react` v0.575) — UI icons
-- **Sonner** (`sonner` v2.0.7) — Toast feedback
+## Pending Security Issues Found by Lovable Scanner
 
-### Cross-Platform Companion (Android / Desktop / Web)
-- **Python 3.10+ / Flet** — Native Android release APK, desktop, and web companion client located under `/python-src/`
-- **Multi-Target Packaging** — Automated `Makefile` supporting Wheel (`.whl`), Debian (`.deb`), and Android APK builds
-- **Automated Regression Suite** — 22 standard-library unit tests under `/python-src/test/` with headless CI/CD stubs
+- [ ] (2026-11-03) [Critical] Anyone can delete any record in `gmaps_list_sources` (`RLS_EXPOSURE`). Unresolved: user explicitly chose to keep group-link deletion on 2026-11-03.
+- [ ] (2026-11-03) [Warning] Anyone can delete any record in `restaurants` (`RLS_EXPOSURE`). Unresolved: user explicitly chose to keep group-link deletion on 2026-11-03.
+- [ ] (2026-10-26) [Warning] Anyone can place spreadsheet formulas in shared-list downloads (`INPUT_VALIDATION`). Code remediation implemented on 2026-11-03 (`safeSpreadsheetText` prepending `'`); finding remains active in scanner awaiting deep security scan refresh.
 
-### Cloud Backend & Services
-- **Lovable Cloud (PostgreSQL)**:
-  - Managed PostgreSQL instance with Row-Level Security (RLS)
-  - Supabase client (`@supabase/supabase-js` v2.118)
-  - Realtime publication for instant multi-device synchronization
-- **Automated Cron Jobs**:
-  - Daily 03:00 Bangkok automated refresh job hitting `/api/public/jobs/refresh-gmaps-lists`
-- **Google Maps Data Integration**:
-  - Upstream place details, address parser, and shared-list resolver via server functions (`src/lib/gmaps-core.ts`)
+---
 
-### Testing & Development
-- **Vitest** (v4.1.10) — Fast unit and integration test runner (28 automated tests across 8 suites)
-- **Testing Library** (`@testing-library/react` v16.0) — Component rendering and behavior tests
-- **Playwright** — Multi-device end-to-end browser automation
-- **Drizzle ORM & Kit** (`drizzle-kit`, `drizzle-orm`) — Migration management
-- **Vite 8** (`vite` v8.1.5) — Bundler and dev server
+## Pending Fixes, Features, and Enhancements
+
+- [ ] (2026-11-23) Re-brand to 'HungryGoHappy' across the entire project:
+  - [ ] Replace remaining 'Hungry Roulette' references in user-facing page `<head>` titles, meta descriptions, and Open Graph social tags (`src/routes/__root.tsx`, `src/routes/$list.index.tsx`, `src/routes/roadmap.tsx`)
+  - [ ] Update JSDoc header descriptions, code comments, and internal label strings across `src/` and `python-src/`
+  - [ ] Migrate local client cache storage keys (`hungry-roulette-restaurants` → `hungrygohappy-restaurants`) with defensive fallback to preserve existing user data without data loss
+  - [ ] Audit documentation, test reports, and schema references to ensure consistent 'HungryGoHappy' branding everywhere, preserving 'Hungry Roulette' references strictly when citing the original starting-point app (`https://hungry-roulette.lovable.app/`)
+- [ ] (2026-11-09) List share URL QR code display:
+  - [ ] Display the list's full shareable URL as a scannable QR code on the Share dialog so users can quickly share the list in person with nearby smartphone users
+- [ ] (2026-11-05) Test suite inventory & test scripts directory structure:
+  - [ ] Maintain an inventory of all unit tests and test-script source files (ever developed and used) in the repository under `/src/test/`
+  - [ ] Move deprecated/obsolete test source files into subdirectory `/src/test/deprecated/`
+  - [ ] Keep stand-alone executable Python test scripts under `/src/test/python-scripts/`
+- [ ] (2026-11-05) Shared list import & tracked sync polish:
+  - [ ] Set initial `last_synced_at` timestamp on newly registered tracked sources (currently shows "Not synced yet" upon first import until manual/cron sync)
+  - [ ] Fix Tracked Lists Dialog UI state lag when refreshing individual source (local React state does not immediately reflect updated timestamp without closing/reopening)
+  - [ ] Expose extracted location details in the Import Preview dialog (display parsed city/province/country alongside name and URL)
+  - [ ] Support country inference in `parseAddress()` when Google Maps address omits country token (e.g. Bangkok addresses with postal code `10xxx` infer Thailand)
+- [ ] (2026-11-02) Dedicated "All Restaurants" full page:
+  - [ ] Move from slide-out Gear drawer to dedicated full-page route (`/{list}/places`)
+  - [ ] Include back navigation, sorting, and inline editing/deletion
+- [ ] (2026-11-02) "Review before adding" dialog polish:
+  - [x] (2026-11-10) Add unit tests in `src/test/place-name.test.ts` validating `truncateForDisplay()` (60-character default threshold, trailing ellipsis, short-URL pass-through, custom `max` override)
+  - [ ] Allow dialog width to scale up to 90% of the viewport (`max-w-[90vw]`) to maximize content visibility
+  - [ ] Stack primary "Add {N}" button vertically on top of "Cancel" button
+  - [ ] Support multi-line word-wrapping for reviewed place names
+
+---
+
+## Completed Features
+
+- [x] (2026-11-23) Flet companion Python application:
+  - [x] (2026-11-10) Maintain an up-to-date, functional, complete, and completely documented Flet-based companion Python application source (`/python-src/main.py`)
+  - [x] (2026-11-10) Maintain `/python-src/README.md` containing complete documentation for Software Architecture, Prerequisites, Build Instructions, and Dependency Inventory
+  - [x] (2026-11-10) Maintain runtime dependency manifest (`/python-src/requirements.txt`)
+  - [x] (2026-11-23) Maintain an up-to-date, functional, complete, comprehensive, and completely documented unit and regression test suite (`/python-src/test/` with 22 automated tests)
+  - [x] (2026-11-23) Multi-target packaging automation Makefile supporting test, wheel, Debian package, and Android APK builds (`/python-src/Makefile`, `/python-src/pyproject.toml`)
+- [x] (2026-11-12) Development Roadmap & Releases History page:
+  - [x] (2026-11-10) Added "Development Roadmap & Releases History" link to the Gear menu drawer, opening `/roadmap` in a new browser tab (`target="_blank"`, `rel="noopener noreferrer"`)
+  - [x] (2026-11-12) Dedicated `/roadmap` route rendering parsed sections from `ROADMAP.md` with live search filtering, severity badges, and quick-copy action
+- [x] (2026-11-11) Top-left header controls:
+  - [x] (2026-11-11) Default to dark theme on initial visit with anti-FOUC initialization script
+  - [x] (2026-11-11) Sun/Moon theme switcher toggle button at top-left of every page persisted in localStorage (`hungry_theme`)
+  - [x] (2026-11-13) Simplified controls to single compact theme toggle following user retirement of viewport frame simulator
+- [x] (2026-11-10) Unit tests for `truncateForDisplay()` in `src/test/place-name.test.ts`:
+  - [x] (2026-11-10) Validated 60-character default threshold boundary check, string slicing + trailing ellipsis, custom threshold overrides, and empty string handling (all 28 tests passing across 8 suites)
+- [x] (2026-11-10) Test suite documentation (`/src/test/README.md`):
+  - [x] (2026-11-10) Created `/src/test/README.md` documenting the directory structure, design principles, test suites, and automation scripts
+- [x] (2026-11-10) Database schema & dependency documentation:
+  - [x] (2026-11-10) Created dedicated `SCHEMA.md` documenting tables, columns, constraints, RLS policies, and sync logic
+  - [x] (2026-11-10) Referenced and linked `SCHEMA.md` from `README.md`
+  - [x] (2026-11-10) Added complete inventory of software-library & cloud-service dependencies in `README.md`
+- [x] (2026-11-10) Prebuild chatlog records in `/dev-logs`:
+  - [x] (2026-11-10) Created `dev-logs/20261110-164300_ICT_prebuild_chatlog.md`
+  - [x] (2026-11-09) Reconstructed, clearly labeled historical chatlogs for all earlier builds (2026-10-14, 10-15, 10-16, 10-19, 10-20, 10-22, 10-26, 11-02, 11-04, 11-05 14:15 ICT)
+  - [x] (2026-11-09) Created `dev-logs/20261109-145400_ICT_prebuild_chatlog.md` and `dev-logs/20261109-150100_ICT_prebuild_chatlog.md`
+  - [x] (2026-11-05) Created `dev-logs/20261105-140834_ICT_prebuild_chatlog.md`
+  - [x] (2026-11-03) Created `dev-logs/20261103-112700_ICT_prebuild_chatlog.md`
+- [x] (2026-11-05) Tracked Google Maps lists manager & resolver resilience:
+  - [x] (2026-11-04) Code implemented: `TrackedListsDialog.tsx`, cloud sync functions (`fetchTrackedSources`, `deleteTrackedSource`, `addTrackedSource`), contextual headers and jittered backoff in `gmaps-core.ts`
+  - [x] (2026-11-04) Unit and integration test suite passing (7 tests in `gmaps-retries.test.ts`, `gmaps-sync-plan.test.ts`, and `tracked-sources.test.ts`)
+  - [x] (2026-11-05) Live browser end-to-end verification passed (17-place shared list import, tracking registration, multi-device sync)
+- [x] (2026-11-04) Display-only preview URL truncation threshold adjusted to 60 characters (manual commits: `truncateForDisplay` default in `src/lib/restaurants.ts`, wired into `src/components/ImportPreview.tsx`)
+- [x] (2026-11-03) Importer reliability & deduplication (Batch 1 — verified live in browser):
+  - [x] (2026-11-03) Display-only URL truncation to 80 characters with trailing ellipses in preview
+  - [x] (2026-11-03) Custom-name-safe sync planner (`planGmapsSync` protecting user-renamed places)
+  - [x] (2026-11-03) Cross-format place deduplication by normalized URL and name (verified live: flags duplicate places, deselects, updates button count)
+  - [x] (2026-11-03) Shared-list source duplicate prevention (verified live: detects already-tracked list and offers "Sync now")
+  - [x] (2026-11-03) Mobile Google Maps shortlink manual 302 redirection (verified live: resolved 115 places without rate limits)
+- [x] (2026-11-03) CSV export formula neutralization (`safeSpreadsheetText` prepending `'` on export and preview confirmation)
+- [x] (2026-11-03) Active ImportPreview JSX fix: valid className for flex layout
+- [x] (2026-11-02) Mobile Google Maps shortlink resolver: Manual 302 redirect handling reading `Location` header directly to bypass 429 rate-limiting
+- [x] (2026-10-26) Resolver browser headers + HTTP 429 retry backoff + "Google Maps is busy" message
+- [x] (2026-10-26) List-sharing tip in Add dialog
+- [x] (2026-10-26) Single-place names formatted as "{name} [{plusCode}]"
+- [x] (2026-10-26) Daily auto-refresh of imported Google Maps lists (03:00 Bangkok)
+- [x] (2026-10-22) "Copy to another list" in Share dialog (existing or new target, keep-history vs start-fresh choice, duplicate skip, cloud sync)
+- [x] (2026-10-20) Cloud sync across devices
+- [x] (2026-10-20) FAQ homepage ("Hungry? Let's Go Happy!")
+- [x] (2026-10-19) Edit/delete mode in All restaurants
+- [x] (2026-10-19) + Add dialog (Google Maps link/list + CSV) with inline name editing
+- [x] (2026-10-16) Group-code lists (/{code}, /{code}/add)
+- [x] (2026-10-16) Share dialog + CSV download
+- [x] (2026-10-16) Verify menu, sorting, and visit recording
+- [x] (2026-10-15) Full sortable restaurant list with map links and three-month visit counts
+- [x] (2026-10-15) Update spin label ("Where To Eat/Drink Today?") and limit gear menu to five restaurants
+- [x] (2026-10-15) Spin result: mini map, Let's Go, re-spin, reset
+- [x] (2026-10-15) Import preview for all add channels
+- [x] (2026-10-15) Changed restaurant data schema: Google Maps URL as primary unique key, name optional / auto-retrieved
+- [x] (2026-10-14) /add?gmapslink=... route to add a restaurant via URL parameter (verified: name extracted, duplicate detected)
+- [x] (2026-10-14) CSV upload for adding restaurants (verified: 3-row CSV imported, dedupe works)
+- [x] (2026-10-14) Rebuild Hungry Roulette (cream bg, chunky orange button, settings gear)
