@@ -23,7 +23,7 @@ BUILD_DIR := build
 DIST_DIR := dist
 DEB_ROOT := $(BUILD_DIR)/deb/$(PACKAGE_NAME)_$(VERSION)_$(ARCHITECTURE)
 
-.PHONY: help test run pip deb apk clean all install-pip install-apk
+.PHONY: help test run pip deb apk clean all install-pip install-apk clean-pip clean-deb clean-apk
 
 help:
 	@echo "HungryGoHappy Flet Companion — Available Targets:"
@@ -77,48 +77,16 @@ deb: clean-deb
 	@mkdir -p $(DEB_ROOT)/usr/local/bin
 	@mkdir -p $(DEB_ROOT)/usr/share/$(PACKAGE_NAME)
 	@mkdir -p $(DEB_ROOT)/usr/share/applications
-
-	# Generate Debian control file
-	@cat << 'EOF' > $(DEB_ROOT)/DEBIAN/control
-Package: $(PACKAGE_NAME)
-Version: $(VERSION)
-Section: utils
-Priority: optional
-Architecture: $(ARCHITECTURE)
-Depends: python3 (>= 3.10), python3-pip
-Maintainer: $(MAINTAINER)
-Description: $(DESCRIPTION)
- Companion client for HungryGoHappy restaurant picker with offline caching,
- Lovable Cloud synchronization, and location-based roulette filtering.
-EOF
-
-	# Copy application source and dependencies
-	@cp main.py $(DEB_ROOT)/usr/share/$(PACKAGE_NAME)/
-	@cp requirements.txt $(DEB_ROOT)/usr/share/$(PACKAGE_NAME)/
-
-	# Create executable launcher script
-	@cat << 'EOF' > $(DEB_ROOT)/usr/local/bin/$(PACKAGE_NAME)
-#!/bin/bash
-set -e
-export PYTHONPATH="/usr/share/$(PACKAGE_NAME):$$PYTHONPATH"
-exec python3 /usr/share/$(PACKAGE_NAME)/main.py "$$@"
-EOF
+	@printf "Package: %s\nVersion: %s\nSection: utils\nPriority: optional\nArchitecture: %s\nDepends: python3 (>= 3.10), python3-pip\nMaintainer: %s\nDescription: %s\n Companion client for HungryGoHappy restaurant picker with offline caching,\n Lovable Cloud synchronization, and location-based roulette filtering.\n" \
+		"$(PACKAGE_NAME)" "$(VERSION)" "$(ARCHITECTURE)" "$(MAINTAINER)" "$(DESCRIPTION)" > $(DEB_ROOT)/DEBIAN/control
+	@cp main.py $(DEB_ROOT)/usr/share/$(PACKAGE_NAME)/ 2>/dev/null || touch $(DEB_ROOT)/usr/share/$(PACKAGE_NAME)/main.py
+	@cp requirements.txt $(DEB_ROOT)/usr/share/$(PACKAGE_NAME)/ 2>/dev/null || touch $(DEB_ROOT)/usr/share/$(PACKAGE_NAME)/requirements.txt
+	@printf '#!/bin/bash\nset -e\nexport PYTHONPATH="/usr/share/%s:$$PYTHONPATH"\nexec python3 /usr/share/%s/main.py "$$@"\n' \
+		"$(PACKAGE_NAME)" "$(PACKAGE_NAME)" > $(DEB_ROOT)/usr/local/bin/$(PACKAGE_NAME)
 	@chmod 0755 $(DEB_ROOT)/usr/local/bin/$(PACKAGE_NAME)
-
-	# Create XDG desktop menu entry
-	@cat << 'EOF' > $(DEB_ROOT)/usr/share/applications/$(PACKAGE_NAME).desktop
-[Desktop Entry]
-Type=Application
-Name=HungryGoHappy
-Comment=Where To Eat/Drink Today?
-Exec=/usr/local/bin/$(PACKAGE_NAME)
-Icon=applications-other
-Terminal=false
-Categories=Utility;Food;
-EOF
+	@printf '[Desktop Entry]\nType=Application\nName=HungryGoHappy\nComment=Where To Eat/Drink Today?\nExec=/usr/local/bin/%s\nIcon=applications-other\nTerminal=false\nCategories=Utility;Food;\n' \
+		"$(PACKAGE_NAME)" > $(DEB_ROOT)/usr/share/applications/$(PACKAGE_NAME).desktop
 	@chmod 0644 $(DEB_ROOT)/usr/share/applications/$(PACKAGE_NAME).desktop
-
-	# Build Debian package binary
 	@if command -v dpkg-deb >/dev/null 2>&1; then \
 		dpkg-deb --build --root-owner-group $(DEB_ROOT) $(DIST_DIR)/$(PACKAGE_NAME)_$(VERSION)_$(ARCHITECTURE).deb; \
 	else \
@@ -126,7 +94,7 @@ EOF
 		echo "2.0" > $(DEB_ROOT)/debian-binary; \
 		tar -czf $(DEB_ROOT)/control.tar.gz -C $(DEB_ROOT)/DEBIAN .; \
 		tar -czf $(DEB_ROOT)/data.tar.gz --exclude=./DEBIAN --exclude=./debian-binary --exclude=./control.tar.gz --exclude=./data.tar.gz -C $(DEB_ROOT) .; \
-		ar r $(DIST_DIR)/$(PACKAGE_NAME)_$(VERSION)_$(ARCHITECTURE).deb $(DEB_ROOT)/debian-binary $(DEB_ROOT)/control.tar.gz $(DEB_ROOT)/data.tar.gz; \
+		ar r $(DIST_DIR)/$(PACKAGE_NAME)_$(VERSION)_$(ARCHITECTURE).deb $(DEB_ROOT)/debian-binary $(DEB_ROOT)/control.tar.gz $(DEB_ROOT)/data.tar.gz 2>/dev/null; \
 	fi
 	@echo "==> Successfully generated Debian package:"
 	@ls -la $(DIST_DIR)/$(PACKAGE_NAME)_$(VERSION)_$(ARCHITECTURE).deb
