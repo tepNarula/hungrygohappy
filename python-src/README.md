@@ -69,7 +69,7 @@ A cross-platform Python companion application for **HungryGoHappy**, built with 
 | **`httpx`** | `>=0.27.0` | Asynchronous HTTP client for Google Maps shortlink resolution |
 
 ### Testing & Tooling (Built-in standard library)
-- **`unittest`**: Built-in test runner for data models, resolvers, filters, and sync logic
+- **`unittest`**: Built-in test runner with automated headless CI stubs in `test/__init__.py`
 - **`unittest.mock`**: Mocking HTTP redirects and upstream network responses
 - **`asyncio`**: Asynchronous coroutine orchestration for UI animations and sync
 
@@ -77,19 +77,45 @@ A cross-platform Python companion application for **HungryGoHappy**, built with 
 
 ## 4. Build & Execution Instructions
 
-### A. Install Dependencies
+### A. Quick Commands via Makefile
+```bash
+cd python-src
+
+# Show all available build targets
+make help
+
+# Run all 22 unit and regression tests
+make test
+
+# Launch local desktop application
+make run
+
+# Build Wheel (.whl) and source distribution (.tar.gz)
+make pip
+
+# Build standard Debian (.deb) binary package
+make deb
+
+# Build native Android release APK
+make apk
+
+# Clean all temporary build directories and caches
+make clean
+```
+
+### B. Manual Dependency Installation
 ```bash
 cd python-src
 pip install -r requirements.txt
 ```
 
-### B. Run Desktop / Development App
+### C. Run Desktop App Manually
 ```bash
 # Run standalone with hot-reloading
 flet run main.py
 ```
 
-### C. Build Native Android APK
+### D. Build Native Android APK Manually
 ```bash
 # Generate release APK
 flet build apk --project-name "HungryGoHappy" --org "app.lovable.hungrygohappy"
@@ -103,7 +129,7 @@ To install directly to a connected Android phone via USB debugging:
 adb install build/apk/app-release.apk
 ```
 
-### D. Run or Build for Web
+### E. Run or Build for Web
 ```bash
 # Run local web server on port 8550
 flet run main.py --web --port 8550
@@ -116,16 +142,19 @@ flet build web
 
 ## 5. Automated Test Suite
 
-All unit and regression tests are organized under `python-src/test/` and run without external test runners:
+All 22 unit and regression tests are organized under `python-src/test/` and run without external test runners:
 
 ```bash
-# Run all Python unit tests with verbose output
-python -m unittest discover -s test -v
+# Run via Makefile
+make test
+
+# Or run directly via Python unittest (specifying top-level directory -t .)
+python3 -m unittest discover -s test -t . -v
 ```
 
-### Test Suites Breakdown:
-- **`test_models.py`**: Verifies schema parity with `SCHEMA.md`, nullable fields, and JSON `visit_dates` parsing.
-- **`test_resolver.py`**: Validates 302 shortlink redirection, Plus Code parsing, and 64-bit unsigned place ID bitwise wrapping.
-- **`test_filter.py`**: Tests case-insensitive location filtering across city, province, and postal codes.
-- **`test_visits.py`**: Validates visit counter increments and rolling 3-month recency calculations.
-- **`test_sync.py`**: Tests 3-way merge logic ensuring user-customized place names are never overwritten by upstream Google refreshes.
+### Test Suites Breakdown (22 tests total):
+- **`test_models.py` (4 tests)**: Verifies schema parity with `SCHEMA.md`, nullable fields, and JSON `visit_dates` parsing.
+- **`test_resolver.py` (7 tests)**: Validates 302 shortlink redirection, Plus Code parsing, 64-bit unsigned place ID bitwise wrapping, and 60-character URL truncation.
+- **`test_filter.py` (5 tests)**: Tests case-insensitive location filtering across city, province, and postal codes.
+- **`test_visits.py` (3 tests)**: Validates visit counter increments and rolling 3-month recency calculations.
+- **`test_sync.py` (3 tests)**: Tests 3-way merge logic ensuring user-customized place names are never overwritten by upstream Google refreshes, and formula injection neutralization.
