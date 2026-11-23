@@ -11,7 +11,7 @@ All unit and regression test suites for the Python companion application are mai
 ```text
 python-src/test/
 ├── README.md              # This documentation file
-├── __init__.py            # Test package marker
+├── __init__.py            # Test package marker with headless CI/CD import stubs
 ├── test_models.py         # Schema parity with SCHEMA.md, JSON visit_dates, and null safety
 ├── test_resolver.py       # Unsigned 64-bit place ID wrapping and 60-character URL truncation
 ├── test_filter.py         # Case-insensitive location filtering and standardized location labeling
@@ -23,12 +23,17 @@ python-src/test/
 
 ## 2. Running Automated Tests
 
-All tests are built with Python's standard library **`unittest`** module and require no third-party test runners (e.g. pytest):
+All tests are built with Python's standard library **`unittest`** module and require no third-party test runners:
 
-### Run All Tests
+### Run All 22 Tests
 ```bash
 cd python-src
-python3 -m unittest discover -s test -v
+
+# Option 1: Using Makefile
+make test
+
+# Option 2: Using Python unittest directly (with top-level directory flag -t .)
+python3 -m unittest discover -s test -t . -v
 ```
 
 ### Run an Individual Test Suite
@@ -43,9 +48,9 @@ python3 -m unittest test/test_sync.py -v
 
 ---
 
-## 3. Test Suites & Coverage Breakdown
+## 3. Test Suites & Coverage Breakdown (22 Tests Total)
 
-### `test_models.py` — Schema Parity & Defensive Parsing
+### `test_models.py` — Schema Parity & Defensive Parsing (4 tests)
 - **Target**: `Restaurant` dataclass and `from_row()` factory constructor in `main.py`.
 - **Parity Reference**: `SCHEMA.md` (`public.restaurants` table definition).
 - **Test Cases**:
@@ -54,7 +59,7 @@ python3 -m unittest test/test_sync.py -v
   - `test_from_row_with_list_visit_dates`: Validates parsing when `visit_dates` is already a native Python `list`.
   - `test_from_row_defensive_null_handling`: Validates resilience against `None` values and malformed JSON strings without unhandled exceptions.
 
-### `test_resolver.py` — Place ID Normalization & Display Truncation
+### `test_resolver.py` — Place ID Normalization & Display Truncation (7 tests)
 - **Target**: `to_canonical_place_id()`, `normalize_place_id()`, and `truncate_for_display()` in `main.py`.
 - **Parity Reference**: `src/lib/gmaps-core.ts` and `src/lib/restaurants.ts`.
 - **Test Cases**:
@@ -62,9 +67,11 @@ python3 -m unittest test/test_sync.py -v
   - `test_normalize_place_id_legacy_signed_hex`: Verifies legacy signed hex strings (`...:0x-1b2002beca532784`) normalize cleanly without data migration.
   - `test_normalize_place_id_canonical_passthrough`: Confirms valid canonical IDs pass through unchanged.
   - `test_normalize_place_id_rejects_invalid`: Ensures non-ID strings and null values safely return `None`.
-  - `test_truncate_for_display_*`: Validates 60-character threshold enforcement with trailing `...` ellipsis for compact UI display.
+  - `test_truncate_for_display_under_limit`: Strings under the 60-character threshold pass through unchanged.
+  - `test_truncate_for_display_exact_boundary`: Strings at exactly 60 characters are not truncated.
+  - `test_truncate_for_display_exceeding_threshold`: Strings exceeding 60 characters are sliced to 60 characters with trailing `...`.
 
-### `test_filter.py` — Location Filtering & Label Formatting
+### `test_filter.py` — Location Filtering & Label Formatting (5 tests)
 - **Target**: `filter_by_location()` and `location_label()` in `main.py`.
 - **Parity Reference**: `src/lib/location-filter.ts`.
 - **Test Cases**:
@@ -74,7 +81,7 @@ python3 -m unittest test/test_sync.py -v
   - `test_excludes_places_without_location_metadata`: Places missing location metadata are excluded when an active query is applied.
   - `test_location_label_formatting`: Formats location tokens into standard `"{city}, {province} {postal_code}, {country}"`.
 
-### `test_visits.py` — Rolling 3-Month Recency
+### `test_visits.py` — Rolling 3-Month Recency (3 tests)
 - **Target**: `recent_visit_count()` in `main.py`.
 - **Parity Reference**: `recentVisitCount()` in `src/lib/restaurants.ts`.
 - **Test Cases**:
@@ -82,7 +89,7 @@ python3 -m unittest test/test_sync.py -v
   - `test_recent_visit_count_fallback_to_last_visited_at`: Safely falls back to `last_visited_at` when `visit_dates` array is unpopulated (legacy data migration).
   - `test_recent_visit_count_zero_when_no_visits`: Returns `0` when no visit history exists.
 
-### `test_sync.py` — 3-Way Sync Planner & Security
+### `test_sync.py` — 3-Way Sync Planner & Security (3 tests)
 - **Target**: `plan_gmaps_sync()` and `safe_spreadsheet_text()` in `main.py`.
 - **Parity Reference**: `src/lib/gmaps-sync-plan.ts` and CSV export formula neutralization.
 - **Test Cases**:
@@ -94,6 +101,7 @@ python3 -m unittest test/test_sync.py -v
 
 ## 4. Design Invariants & Testing Principles
 
-1. **Standard Library Only**: All tests use Python's built-in `unittest` module to allow running in lean environments without extra dependencies.
-2. **Deterministic & Isolated**: Unit tests verify algorithmic correctness and data contracts purely in-memory with zero network or database dependencies.
-3. **Strict Parity with Web App**: Every normalization rule, filter heuristic, and recency algorithm identically mirrors the TypeScript implementation in `/src/lib/`.
+1. **Standard Library Only**: All tests use Python's built-in `unittest` module to allow running in lean environments without third-party test runners.
+2. **Headless CI/CD Stubbing**: `python-src/test/__init__.py` automatically stubs `flet`, `httpx`, and `supabase` with `MagicMock` when running in headless CI environments without GUI libraries installed.
+3. **Deterministic & Isolated**: Unit tests verify algorithmic correctness and data contracts purely in-memory with zero network or database dependencies.
+4. **Strict Parity with Web App**: Every normalization rule, filter heuristic, and recency algorithm identically mirrors the TypeScript implementation in `/src/lib/`.
