@@ -25,11 +25,6 @@
 
 ## Pending Fixes, Features, and Enhancements
 
-- [ ] (2026-11-10) Flet companion Python application:
-  - [x] (2026-11-10) Maintain an up-to-date, functional, complete, and completely documented Flet-based companion Python application source (`/python-src/main.py`)
-  - [x] (2026-11-10) Maintain `/python-src/README.md` containing complete documentation for Software Architecture, Prerequisites, Build Instructions, and Dependency Inventory
-  - [x] (2026-11-10) Maintain runtime dependency manifest (`/python-src/requirements.txt`)
-  - [x] Maintain an up-to-date, functional, complete, comprehensive, and completely documented unit and regression test suite (`/python-src/test/`)
 - [ ] (2026-11-09) List share URL QR code display:
   - [ ] Display the list's full shareable URL as a scannable QR code on the Share dialog so users can quickly share the list in person with nearby smartphone users
 - [ ] (2026-11-05) Test suite inventory & test scripts directory structure:
@@ -44,23 +39,29 @@
 - [ ] (2026-11-02) Dedicated "All Restaurants" full page:
   - [ ] Move from slide-out Gear drawer to dedicated full-page route (`/{list}/places`)
   - [ ] Include back navigation, sorting, and inline editing/deletion
-- [ ] (2026-11-02) Top-left header controls:
-  - [ ] Default to dark theme on initial visit
-  - [ ] Sun/Moon theme switcher toggle button at top-left of every page
-  - [ ] Desktop/Mobile viewport frame toggle button next to theme switcher
 - [ ] (2026-11-02) "Review before adding" dialog polish:
   - [x] (2026-11-10) Add unit tests in `src/test/place-name.test.ts` validating `truncateForDisplay()` (60-character default threshold, trailing ellipsis, short-URL pass-through, custom `max` override)
   - [ ] Allow dialog width to scale up to 90% of the viewport (`max-w-[90vw]`) to maximize content visibility
   - [ ] Stack primary "Add {N}" button vertically on top of "Cancel" button
   - [ ] Support multi-line word-wrapping for reviewed place names
-- [ ] (2026-11-02) Development Roadmap & Releases History page:
-  - [x] Add "Development Roadmap & Releases History" link at the bottom of the Gear menu drawer
-  - [ ] Dedicated `/roadmap` page displaying HTML-rendered view of `ROADMAP.md` with return navigation
 
 ---
 
 ## Completed Features
 
+- [x] (2026-11-23) Flet companion Python application:
+  - [x] (2026-11-10) Maintain an up-to-date, functional, complete, and completely documented Flet-based companion Python application source (`/python-src/main.py`)
+  - [x] (2026-11-10) Maintain `/python-src/README.md` containing complete documentation for Software Architecture, Prerequisites, Build Instructions, and Dependency Inventory
+  - [x] (2026-11-10) Maintain runtime dependency manifest (`/python-src/requirements.txt`)
+  - [x] (2026-11-23) Maintain an up-to-date, functional, complete, comprehensive, and completely documented unit and regression test suite (`/python-src/test/` with 22 automated tests)
+  - [x] (2026-11-23) Multi-target packaging automation Makefile supporting test, wheel, Debian package, and Android APK builds (`/python-src/Makefile`, `/python-src/pyproject.toml`)
+- [x] (2026-11-12) Development Roadmap & Releases History page:
+  - [x] (2026-11-10) Added "Development Roadmap & Releases History" link to the Gear menu drawer, opening `/roadmap` in a new browser tab (`target="_blank"`, `rel="noopener noreferrer"`)
+  - [x] (2026-11-12) Dedicated `/roadmap` route rendering parsed sections from `ROADMAP.md` with live search filtering, severity badges, and quick-copy action
+- [x] (2026-11-11) Top-left header controls:
+  - [x] (2026-11-11) Default to dark theme on initial visit with anti-FOUC initialization script
+  - [x] (2026-11-11) Sun/Moon theme switcher toggle button at top-left of every page persisted in localStorage (`hungry_theme`)
+  - [x] (2026-11-13) Simplified controls to single compact theme toggle following user retirement of viewport frame simulator
 - [x] (2026-11-10) Unit tests for `truncateForDisplay()` in `src/test/place-name.test.ts`:
   - [x] (2026-11-10) Validated 60-character default threshold boundary check, string slicing + trailing ellipsis, custom threshold overrides, and empty string handling (all 28 tests passing across 8 suites)
 - [x] (2026-11-10) Test suite documentation (`/src/test/README.md`):
