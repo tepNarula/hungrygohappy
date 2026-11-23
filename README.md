@@ -10,6 +10,10 @@ ___[Development Roadmap & Releases History](./ROADMAP.md)___
 
 ___[Database Schema](./SCHEMA.md)___
 
+___[Flet Companion Application](./python-src/README.md)___
+
+___[Web Test Suite Documentation](./src/test/README.md)___
+
 ---
 ## Architecture & Technology Stack
 
@@ -23,6 +27,11 @@ ___[Database Schema](./SCHEMA.md)___
 - **Lucide Icons** (`lucide-react` v0.575) — UI icons
 - **Sonner** (`sonner` v2.0.7) — Toast feedback
 
+### Cross-Platform Companion (Android / Desktop / Web)
+- **Python 3.10+ / Flet** — Native Android release APK, desktop, and web companion client located under `/python-src/`
+- **Multi-Target Packaging** — Automated `Makefile` supporting Wheel (`.whl`), Debian (`.deb`), and Android APK builds
+- **Automated Regression Suite** — 22 standard-library unit tests under `/python-src/test/` with headless CI/CD stubs
+
 ### Cloud Backend & Services
 - **Lovable Cloud (PostgreSQL)**:
   - Managed PostgreSQL instance with Row-Level Security (RLS)
@@ -34,7 +43,7 @@ ___[Database Schema](./SCHEMA.md)___
   - Upstream place details, address parser, and shared-list resolver via server functions (`src/lib/gmaps-core.ts`)
 
 ### Testing & Development
-- **Vitest** (v4.1.10) — Fast unit and integration test runner (24 automated tests across 8 suites)
+- **Vitest** (v4.1.10) — Fast unit and integration test runner (28 automated tests across 8 suites)
 - **Testing Library** (`@testing-library/react` v16.0) — Component rendering and behavior tests
 - **Playwright** — Multi-device end-to-end browser automation
 - **Drizzle ORM & Kit** (`drizzle-kit`, `drizzle-orm`) — Migration management
