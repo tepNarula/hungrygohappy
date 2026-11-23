@@ -41,7 +41,7 @@ help:
 
 test:
 	@echo "==> Running Python unit and regression test suite..."
-	python3 -m unittest discover -s test -v
+	python3 -m unittest discover -s test -t . -v
 
 run:
 	@echo "==> Starting HungryGoHappy desktop application..."
