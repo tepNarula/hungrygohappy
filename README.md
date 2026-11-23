@@ -8,9 +8,9 @@ Built with [Lovable](https://lovable.dev).
 
 ___[Development Roadmap & Releases History](./ROADMAP.md)___
 
-___[Database Schema](./SCHEMA.md)___
+___[Database Schema Documentation](./SCHEMA.md)___
 
-___[Flet Companion Application](./python-src/README.md)___
+___[Flet Companion Application Documentation](./python-src/README.md)___
 
 ___[Web Test Suite Documentation](./src/test/README.md)___
 
