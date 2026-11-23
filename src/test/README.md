@@ -17,7 +17,7 @@ src/test/
 ├── gmaps-retries.test.ts         # Google Maps HTTP 429 throttling & jittered backoff
 ├── gmaps-sync-plan.test.ts       # 3-way sync planner and custom name preservation
 ├── location-filter.test.ts       # Location metadata extraction and pre-spin filtering
-├── place-name.test.ts            # Plus Code formatting and URL display name parsing
+├── place-name.test.ts            # Plus Code formatting, URL decoding, and display truncation
 ├── restaurant-visits.test.ts     # Rolling 3-month visit counts and legacy data preservation
 ├── tracked-sources.test.ts       # Group-code scoped query isolation and non-destructive deletion
 ├── deprecated/                   # Archived/obsolete test suites no longer in active CI
@@ -31,7 +31,7 @@ src/test/
 Tests are executed with **Vitest**:
 
 ```bash
-# Run all 24 unit and integration tests across 8 test suites
+# Run all 28 unit and integration tests across 8 test suites
 bunx vitest run
 
 # Run tests in watch mode during active development
@@ -87,12 +87,13 @@ bunx vitest
 
 ---
 
-### `place-name.test.ts` — Place Name Extraction & Plus Code Formatting (3 tests)
-- **Target Module**: `src/lib/restaurants.ts` (`formatPlaceName`, `nameFromGmapsUrl`)
+### `place-name.test.ts` — Place Name Extraction & Display Truncation (7 tests)
+- **Target Module**: `src/lib/restaurants.ts` (`formatPlaceName`, `nameFromGmapsUrl`, `truncateForDisplay`)
 - **Design Intent**:
   - Confirms Google Plus Codes (e.g., `QMPW+5WC`) are extracted from long address strings and moved to square brackets (`Restaurant [QMPW+5WC]`).
   - Verifies that address text is stripped when no Plus Code is present.
   - Tests URL decoding for raw place links with URL-encoded query parameters.
+  - Validates `truncateForDisplay()` boundary behaviors: strings under the 60-character threshold pass through untouched, exact 60-character boundaries remain intact, strings exceeding 60 characters are sliced with trailing `...`, custom threshold overrides are respected, and empty strings return untouched.
 
 ---
 
