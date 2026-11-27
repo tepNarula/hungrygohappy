@@ -117,8 +117,8 @@ flet run main.py
 
 ### D. Build Native Android APK Manually
 ```bash
-# Generate release APK
-flet build apk --project-name "HungryGoHappy" --org "app.lovable.hungrygohappy"
+# Generate release APK (Flet 1.1.x)
+flet build apk --project "hungrygohappy" --product "HungryGoHappy" --org "app.lovable.hungrygohappy"
 
 # The resulting binary is located at:
 # build/apk/app-release.apk
