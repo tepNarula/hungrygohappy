@@ -5,7 +5,7 @@
 #   make test       - Execute automated unit and regression test suite
 #   make run        - Run standalone desktop application with hot-reloading
 #   make pip        - Build Python Wheel (.whl) and Source Distribution (.tar.gz)
-#   make deb        - Build standard Debian (.deb) binary package
+#   make deb        - Build standard Debian (.deb) binary package via dpkg-deb
 #   make apk        - Build native Android release APK via Flet / Flutter
 #   make clean      - Remove build directories, caches, and distribution packages
 #   make all        - Build pip, debian, and APK packages in sequence
@@ -87,15 +87,7 @@ deb: clean-deb
 	@printf '[Desktop Entry]\nType=Application\nName=HungryGoHappy\nComment=Where To Eat/Drink Today?\nExec=/usr/local/bin/%s\nIcon=applications-other\nTerminal=false\nCategories=Utility;Food;\n' \
 		"$(PACKAGE_NAME)" > $(DEB_ROOT)/usr/share/applications/$(PACKAGE_NAME).desktop
 	@chmod 0644 $(DEB_ROOT)/usr/share/applications/$(PACKAGE_NAME).desktop
-	@if command -v dpkg-deb >/dev/null 2>&1; then \
-		dpkg-deb --build --root-owner-group $(DEB_ROOT) $(DIST_DIR)/$(PACKAGE_NAME)_$(VERSION)_$(ARCHITECTURE).deb; \
-	else \
-		echo "dpkg-deb not found; packing via standard ar/tar.gz..."; \
-		echo "2.0" > $(DEB_ROOT)/debian-binary; \
-		tar -czf $(DEB_ROOT)/control.tar.gz -C $(DEB_ROOT)/DEBIAN .; \
-		tar -czf $(DEB_ROOT)/data.tar.gz --exclude=./DEBIAN --exclude=./debian-binary --exclude=./control.tar.gz --exclude=./data.tar.gz -C $(DEB_ROOT) .; \
-		ar r $(DIST_DIR)/$(PACKAGE_NAME)_$(VERSION)_$(ARCHITECTURE).deb $(DEB_ROOT)/debian-binary $(DEB_ROOT)/control.tar.gz $(DEB_ROOT)/data.tar.gz 2>/dev/null; \
-	fi
+	dpkg-deb --build --root-owner-group $(DEB_ROOT) $(DIST_DIR)/$(PACKAGE_NAME)_$(VERSION)_$(ARCHITECTURE).deb
 	@echo "==> Successfully generated Debian package:"
 	@ls -la $(DIST_DIR)/$(PACKAGE_NAME)_$(VERSION)_$(ARCHITECTURE).deb
 
@@ -110,7 +102,8 @@ apk: clean-apk
 	@echo "==> Building native Android release APK via Flet..."
 	@mkdir -p $(DIST_DIR)
 	flet build apk \
-		--project-name "HungryGoHappy" \
+		--project "hungrygohappy" \
+		--product "HungryGoHappy" \
 		--org "app.lovable.hungrygohappy" \
 		--description "Where To Eat/Drink Today?" \
 		--build-version "$(VERSION)"
