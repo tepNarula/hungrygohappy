@@ -3,8 +3,8 @@
 # Minimal, locked-specification runtime dependencies required to run the
 # standalone Python application across Android (via APK build), Desktop, and Web.
 
-# Cross-platform Flutter-powered UI engine and runtime framework
-flet>=0.25.0
+# Cross-platform Flutter-powered UI engine and runtime framework (Flet 1.1.x)
+flet>=1.1.0,<1.2.0
 
 # Backend PostgreSQL data access and realtime sync matching SCHEMA.md
 supabase>=2.10.0
