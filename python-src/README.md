@@ -11,7 +11,7 @@ A cross-platform Python companion application for **HungryGoHappy**, built with 
 ┌─────────────────────────────────┐       ┌─────────────────────────────────┐
 │     Web App (TanStack Start)    │       │     Android App (Flet / APK)    │
 │  - React 19 / Tailwind CSS      │       │  - Python 3.10+ / Flutter UI    │
-│  - localStorage offline cache   │       │  - page.client_storage cache    │
+│  - localStorage offline cache   │       │  - Multi-tier persistent cache  │
 └────────────────┬────────────────┘       └────────────────┬────────────────┘
                  │                                         │
                  │   Shared Group-Code Data & RLS          │
@@ -30,18 +30,18 @@ A cross-platform Python companion application for **HungryGoHappy**, built with 
 
 ### Key Architectural Layers
 1. **User Interface (`main.py`)**:
-   - Built using Flet controls (`ft.Container`, `ft.ElevatedButton`, `ft.Row`, `ft.TextField`).
+   - Built using Flet controls (`ft.Container`, `ft.Button`/`ft.FilledButton`, `ft.Row`, `ft.TextField`) compatible with Flet 1.1.x and Flet 0.x.
    - Implements Material 3 theming with HungryGoHappy's signature warm palette (`#EA580C` burnt orange) and full Dark/Light theme switching.
    - Smooth roulette slot-machine rolling animation with configurable location filtering.
 2. **Data & Synchronization Layer**:
    - Connects directly to the PostgreSQL database via `supabase-py` using the anon publishable key.
-   - Dual-layer caching: reads instant offline state from `page.client_storage` (backed by SharedPreferences on Android) before fetching live changes from the cloud.
+   - Multi-tier caching: loads instant offline state from device storage (`client_storage`, `session.store`, or memory fallback) before fetching live changes from the cloud.
    - Strictly conforms to the data contracts defined in the project's root `SCHEMA.md`.
 3. **Upstream Link Resolution**:
    - Uses asynchronous `httpx` to follow Google Maps 302 shortlinks (`maps.app.goo.gl`) and extract place names without browser CORS proxy restrictions.
    - Converts Google's signed 64-bit integer halves into canonical unsigned hexadecimal identifiers (`BigInt.asUintN` equivalent in Python: `val & 0xFFFFFFFFFFFFFFFF`).
-4. **Native Android Intents**:
-   - Tapping "Let's Go!" records the visit timestamp in PostgreSQL and triggers `page.launch_url()`, launching the native Google Maps app directly on Android for real-time turn-by-turn navigation.
+4. **Native Android Intents & Navigation**:
+   - Tapping "Let's Go!" records the visit timestamp in PostgreSQL and triggers URL launch via Android Intent or web browser for real-time turn-by-turn navigation.
 
 ---
 
@@ -64,7 +64,7 @@ A cross-platform Python companion application for **HungryGoHappy**, built with 
 ### Runtime Dependencies
 | Package | Version Spec | Purpose |
 | :--- | :--- | :--- |
-| **`flet`** | `>=0.25.0` | Cross-platform UI framework and Flutter runtime engine |
+| **`flet`** | `>=1.1.0,<1.2.0` | Cross-platform UI framework and Flutter runtime engine (Flet 1.1.x) |
 | **`supabase`** | `>=2.10.0` | PostgreSQL client for Lovable Cloud data access and mutations |
 | **`httpx`** | `>=0.27.0` | Asynchronous HTTP client for Google Maps shortlink resolution |
 
