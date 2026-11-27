@@ -16,7 +16,8 @@ python-src/test/
 ├── test_resolver.py       # Unsigned 64-bit place ID wrapping and 60-character URL truncation
 ├── test_filter.py         # Case-insensitive location filtering and standardized location labeling
 ├── test_visits.py         # Rolling 3-calendar-month visit counts and legacy visit fallback
-└── test_sync.py           # 3-way sync planner, custom name preservation, and formula injection protection
+├── test_sync.py           # 3-way sync planner, custom name preservation, and formula injection protection
+└── test_compat.py         # Flet 1.1.x / 0.x cross-version helpers, storage keys, and memory cache
 ```
 
 ---
@@ -25,7 +26,7 @@ python-src/test/
 
 All tests are built with Python's standard library **`unittest`** module and require no third-party test runners:
 
-### Run All 22 Tests
+### Run All 28 Tests
 ```bash
 cd python-src
 
@@ -44,11 +45,12 @@ python3 -m unittest test/test_resolver.py -v
 python3 -m unittest test/test_filter.py -v
 python3 -m unittest test/test_visits.py -v
 python3 -m unittest test/test_sync.py -v
+python3 -m unittest test/test_compat.py -v
 ```
 
 ---
 
-## 3. Test Suites & Coverage Breakdown (22 Tests Total)
+## 3. Test Suites & Coverage Breakdown (28 Tests Total)
 
 ### `test_models.py` — Schema Parity & Defensive Parsing (4 tests)
 - **Target**: `Restaurant` dataclass and `from_row()` factory constructor in `main.py`.
@@ -96,6 +98,16 @@ python3 -m unittest test/test_sync.py -v
   - `test_preserves_custom_name_when_google_name_updates`: User-renamed places retain custom labels even when upstream Google Maps titles refresh.
   - `test_updates_name_if_user_never_customized_it`: Unedited place names advance to the newly fetched Google Maps title.
   - `test_safe_spreadsheet_text_neutralization`: Prepends a single quote (`'`) to strings starting with formula execution tokens (`=`, `+`, `-`, `@`, `\t`, `\r`) to neutralize spreadsheet formula injection vulnerabilities.
+
+### `test_compat.py` — Cross-Version Compatibility & Local Cache (6 tests)
+- **Target**: Section 5b helpers, `get_storage_key()`, `load_local_list()`, `save_local_list()`, and `_MEMORY_CACHE` in `main.py`.
+- **Test Cases**:
+  - `test_get_storage_key_default`: Maps default group code to `hungry_roulette_restaurants` matching the web storage key.
+  - `test_get_storage_key_custom`: Formats custom group code keys (`hungry_roulette_restaurants_{code}`).
+  - `test_memory_cache_roundtrip`: Verifies memory cache stores and deserializes `Restaurant` objects in headless environments.
+  - `test_button_class_resolved`: Resolves button constructor across Flet versions.
+  - `test_make_padding_symmetric_and_all`: Validates symmetric and all padding creation.
+  - `test_set_button_label_content_and_text`: Confirms label updates work on both Flet 1.1.x (`content`) and Flet 0.x (`text`).
 
 ---
 
