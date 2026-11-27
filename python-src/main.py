@@ -64,6 +64,7 @@ class Restaurant:
         """
         Factory method to safely parse a database row or cached JSON dictionary.
         Handles JSON string vs list representations for `visit_dates` defensively.
+        Falls back to 'Unnamed Place' and empty strings if fields arrive null.
         """
         raw_dates = row.get("visit_dates")
         if isinstance(raw_dates, str):
@@ -77,9 +78,9 @@ class Restaurant:
             visit_dates = []
 
         return cls(
-            google_maps_url=row.get("google_maps_url", ""),
-            list_code=row.get("list_code", "default") or "default",
-            name=row.get("name"),
+            google_maps_url=str(row.get("google_maps_url") or ""),
+            list_code=str(row.get("list_code") or "default"),
+            name=row.get("name") or "Unnamed Place",
             visits=int(row.get("visits", 0) or 0),
             last_visited_at=row.get("last_visited_at"),
             visit_dates=visit_dates,
@@ -177,7 +178,7 @@ async def fetch_cloud_restaurants(list_code: str) -> List[Restaurant]:
 
 async def record_visit_cloud(restaurant: Restaurant) -> None:
     """
-    Increment visit count and append current UTC ISO timestamp to PostgreSQL.
+    Increment visit count and append UTC ISO timestamp in Lovable Cloud.
     Maintains rolling 3-month visit history parity with the web application.
     """
     now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
@@ -221,16 +222,18 @@ def normalize_place_id(value: Optional[str]) -> Optional[str]:
     """
     Normalize canonical IDs and legacy IDs containing a signed hexadecimal half.
     Keeps database rows imported before the unsigned fix usable without migrations.
+    Applies unsigned 64-bit bitwise wrapping (& 0xFFFFFFFFFFFFFFFF) matching src/lib/gmaps-core.ts.
     """
     if not isinstance(value, str):
         return None
-    raw = value.strip()
-    if not raw.startswith("0x") or ":" not in raw:
+    match = re.match(r"^0x(-?[0-9a-fA-F]{1,16}):0x(-?[0-9a-fA-F]{1,16})$", value.strip())
+    if not match:
         return None
     try:
-        parts = raw.split(":")
-        if len(parts) != 2:
-            return None
+        parts = []
+        for part in [match.group(1), match.group(2)]:
+            val = -int(part[1:], 16) if part.startswith("-") else int(part, 16)
+            parts.append(f"{val & 0xFFFFFFFFFFFFFFFF:x}")
         return f"0x{parts[0]}:0x{parts[1]}"
     except Exception:
         return None
@@ -244,20 +247,10 @@ def truncate_for_display(text: str, max_chars: int = 60) -> str:
     return f"{text[:max_chars]}..." if len(text) > max_chars else text
 
 
-def safe_spreadsheet_text(v: str) -> str:
-    """
-    Neutralize spreadsheet formula injection characters (=, +, -, @, \\t, \\r).
-    Ensures exported CSVs or user-entered strings cannot trigger formula execution.
-    """
-    if v and v[0] in ("=", "+", "-", "@", "\t", "\r"):
-        return f"'{v}"
-    return v
-
-
 async def resolve_and_extract_place(url: str) -> Tuple[str, str, Optional[str]]:
     """
-    Resolve Google Maps shortlinks (maps.app.goo.gl) and extract metadata.
-    Returns: (canonical_url, place_name, optional_place_id)
+    Follow HTTP redirects upstream to resolve Google Maps shortlinks (goo.gl, maps.app.goo.gl).
+    Extracts the canonical location title and optional 64-bit Place ID hexadecimal pair.
     """
     clean_url = url.strip()
     headers = {
@@ -294,14 +287,26 @@ async def resolve_and_extract_place(url: str) -> Tuple[str, str, Optional[str]]:
         return clean_url, "Added Place", None
 
 
+def safe_spreadsheet_text(value: str) -> str:
+    """
+    Neutralize CSV / spreadsheet formula injection vulnerabilities.
+    Prepends a single quote if the text starts with formula triggers (=, +, -, @, \\t, \\r).
+    """
+    if not value:
+        return ""
+    if value[0] in ("=", "+", "-", "@", "\t", "\r"):
+        return f"'{value}"
+    return value
+
+
 # ==============================================================================
-# 4. LOCATION FILTERING & RECENCY CALCULATIONS
+# 4. LOCATION FILTERING, LABEL FORMATTING & ROLLING 3-MONTH RECENCY
 # ==============================================================================
 
 def filter_by_location(restaurants: List[Restaurant], query: str) -> List[Restaurant]:
     """
-    Return restaurants matching a case-insensitive location substring.
-    Searches across city, province, postal_code, and country fields.
+    Filter restaurant collection by case-insensitive matching across city, province,
+    postal code, and country tokens. Matches src/lib/location-filter.ts.
     """
     clean_q = (query or "").strip().lower()
     if not clean_q:
@@ -317,7 +322,7 @@ def filter_by_location(restaurants: List[Restaurant], query: str) -> List[Restau
 
 def location_label(r: Restaurant) -> str:
     """
-    Format a restaurant's location components into a standardized display label:
+    Format restaurant location metadata into a standardized human-readable string:
     '{city}, {province} {postal_code}, {country}'.
     """
     parts = []
@@ -335,7 +340,7 @@ def location_label(r: Restaurant) -> str:
 def recent_visit_count(r: Restaurant, now: Optional[datetime.datetime] = None) -> int:
     """
     Calculate the number of visits within the trailing 3 calendar months.
-    Conforms strictly to the web application's recentVisitCount() algorithm.
+    Matches recentVisitCount() logic in src/lib/restaurants.ts.
     """
     if now is None:
         now = datetime.datetime.now(datetime.timezone.utc)
@@ -377,14 +382,13 @@ def recent_visit_count(r: Restaurant, now: Optional[datetime.datetime] = None) -
 
 @dataclass
 class SyncPlan:
-    """Container for additions and updates produced by the Google Maps sync planner."""
     added: List[dict]
     updates: List[dict]
 
 
 def plan_gmaps_sync(current: List[Restaurant], incoming: List[dict], source_id: str) -> SyncPlan:
     """
-    Plan updates for a tracked Google Maps list without overwriting custom place names.
+    3-way merge planner mirroring src/lib/gmaps-sync-plan.ts.
     Preserves user edits: only updates name if existing name is blank or equals existing gmaps_name.
     """
     by_url = {r.google_maps_url: r for r in current}
@@ -510,8 +514,7 @@ def open_external_url(page: ft.Page, url: str) -> None:
 
 def main(page: ft.Page) -> None:
     """
-    Main application UI setup and lifecycle handler for Flet.
-    Initializes Material 3 styling, theme modes, and responsive layout structure.
+    Root application lifecycle handler initializing layout, state, and event loops.
     """
     page.title = "HungryGoHappy"
     page.theme_mode = ft.ThemeMode.DARK
@@ -583,7 +586,7 @@ def main(page: ft.Page) -> None:
 
     location_subtext = ft.Text(
         "",
-        size=14,
+        size=13,
         color=ft.Colors.GREY_400,
         text_align=ft.TextAlign.CENTER,
     )
@@ -600,13 +603,13 @@ def main(page: ft.Page) -> None:
         ),
     )
 
-    # ---------------- Synchronize & Filter Logic ----------------
+    # ---------------- Reactive Logic & Event Handlers ----------------
 
     def update_candidate_count() -> None:
-        """Update the UI counter reflecting how many places match the location filter."""
+        """Refresh candidate count label reflecting the active location query."""
         candidates = filter_by_location(restaurants, filter_field.value)
         total = len(restaurants)
-        if filter_field.value and filter_field.value.strip():
+        if filter_field.value.strip():
             candidate_count_text.value = f"{len(candidates)} of {total} places match filter"
         else:
             candidate_count_text.value = f"{total} places on this list"
@@ -614,7 +617,7 @@ def main(page: ft.Page) -> None:
 
     async def reload_restaurants(e=None) -> None:
         """
-        Refresh current list:
+        Two-stage restaurant retrieval:
         1. Render instantly from local client storage cache.
         2. Query Lovable Cloud asynchronously and update storage with merged rows.
         """
@@ -639,11 +642,9 @@ def main(page: ft.Page) -> None:
     list_code_field.on_submit = reload_restaurants
     filter_field.on_change = lambda e: update_candidate_count()
 
-    # ---------------- Spin / Roulette Animation ----------------
-
     async def spin_roulette(e) -> None:
         """
-        Execute random selection with slot-machine rolling animation.
+        Randomly select a candidate restaurant with deceleration animation.
         Respects active location filter and picks only from qualifying places.
         """
         nonlocal is_spinning, current_picked
@@ -681,12 +682,10 @@ def main(page: ft.Page) -> None:
         is_spinning = False
         page.update()
 
-    # ---------------- "Let's Go!" Visit Action ----------------
-
     async def on_lets_go_clicked(e) -> None:
         """
-        Launch Google Maps via Android Native Intent (or browser on Desktop/Web),
-        and record the visit in both the Cloud database and client storage.
+        Record visit in Lovable Cloud and dispatch native navigation intent.
+        Launches Google Maps turn-by-turn navigation on mobile devices.
         """
         if not current_picked:
             return
@@ -701,10 +700,8 @@ def main(page: ft.Page) -> None:
 
     lets_go_btn.on_click = on_lets_go_clicked
 
-    # ---------------- Theme Switcher ----------------
-
     def toggle_theme(e) -> None:
-        """Toggle between Dark and Light Material 3 theme modes."""
+        """Toggle UI between Dark and Light mode."""
         page.theme_mode = (
             ft.ThemeMode.LIGHT if page.theme_mode == ft.ThemeMode.DARK else ft.ThemeMode.DARK
         )
@@ -722,11 +719,11 @@ def main(page: ft.Page) -> None:
     )
     new_name_field = ft.TextField(
         label="Custom Name (optional)",
-        hint_text="Leave blank to auto-extract",
+        hint_text="Leave blank to auto-fetch from Google Maps",
     )
 
     async def add_place_to_cloud(e) -> None:
-        """Resolve Google Maps link, sanitize name, and insert new place row into Lovable Cloud."""
+        """Resolve shortlink and insert record into the Cloud database."""
         target_url = new_url_field.value.strip()
         if not target_url:
             return
@@ -735,17 +732,16 @@ def main(page: ft.Page) -> None:
         page.update()
 
         resolved_url, extracted_name, place_id = await resolve_and_extract_place(target_url)
-        raw_name = new_name_field.value.strip() or extracted_name
-        final_name = safe_spreadsheet_text(raw_name)
+        final_name = new_name_field.value.strip() or extracted_name
 
         new_record = {
-            "list_code": current_list_code,
             "google_maps_url": resolved_url,
-            "name": final_name,
+            "list_code": current_list_code,
+            "name": safe_spreadsheet_text(final_name),
             "gmaps_name": extracted_name,
+            "gmaps_place_id": normalize_place_id(place_id),
             "visits": 0,
             "visit_dates": [],
-            "gmaps_place_id": place_id,
         }
 
         try:
@@ -785,7 +781,7 @@ def main(page: ft.Page) -> None:
         content=ft.Container(
             content=ft.Column(
                 [
-                    ft.Icon(ft.Icons.CASINO_ROUNDED, size=40, color=ft.Colors.WHITE),
+                    ft.Icon(ft.Icons.CASINO_ROUNDED, size=48, color=ft.Colors.WHITE),
                     ft.Text(
                         "Where To Eat/Drink Today?",
                         size=18,
@@ -803,19 +799,19 @@ def main(page: ft.Page) -> None:
         on_click=spin_roulette,
         style=ft.ButtonStyle(
             bgcolor="#EA580C",
-            shape=ft.RoundedRectangleBorder(radius=24),
-            elevation=8,
+            shape=ft.RoundedRectangleBorder(radius=28),
+            elevation=4,
         ),
     )
 
-    # ---------------- View Layout Tree ----------------
+    # ---------------- Page Layout Assembler ----------------
 
     page.add(
-        # Top App Bar
+        # Top App Bar / Actions
         ft.Row(
             [
                 list_code_field,
-                ft.IconButton(ft.Icons.SYNC, tooltip="Sync Cloud", on_click=reload_restaurants),
+                ft.Container(expand=True),
                 ft.IconButton(
                     ft.Icons.ADD_LOCATION_ALT,
                     tooltip="Add place",
@@ -825,25 +821,28 @@ def main(page: ft.Page) -> None:
                 theme_btn,
             ],
             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            width=380,
         ),
-        ft.Divider(height=8, color=ft.Colors.TRANSPARENT),
-
-        # Location Filter Input Bar
-        ft.Row([filter_field], alignment=ft.MainAxisAlignment.CENTER),
-        candidate_count_text,
         ft.Divider(height=16, color=ft.Colors.TRANSPARENT),
 
-        # Central Result Card
+        # Location Search Filter
+        filter_field,
+        candidate_count_text,
+        ft.Divider(height=20, color=ft.Colors.TRANSPARENT),
+
+        # Roulette Result Card
         ft.Container(
             content=ft.Column(
                 [
                     prompt_label,
                     place_name_text,
                     location_subtext,
-                    ft.Divider(height=12, color=ft.Colors.TRANSPARENT),
+                    ft.Container(height=8),
                     lets_go_btn,
                 ],
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                spacing=8,
             ),
             padding=24,
             border_radius=24,
@@ -861,7 +860,7 @@ def main(page: ft.Page) -> None:
 
 
 # ==============================================================================
-# 7. ENTRY POINT
+# 7. APPLICATION ENTRYPOINT
 # ==============================================================================
 
 if __name__ == "__main__":
