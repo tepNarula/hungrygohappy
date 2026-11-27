@@ -23,6 +23,8 @@ BUILD_DIR := build
 DIST_DIR := dist
 DEB_ROOT := $(BUILD_DIR)/deb/$(PACKAGE_NAME)_$(VERSION)_$(ARCHITECTURE)
 
+FLET_BIN := $(HOME)/src/mypyvenv/bin/flet
+
 .PHONY: help test run pip deb apk clean all install-pip install-apk clean-pip clean-deb clean-apk
 
 help:
@@ -45,7 +47,7 @@ test:
 
 run:
 	@echo "==> Starting HungryGoHappy desktop application..."
-	flet run main.py
+	$(FLET_BIN) run main.py
 
 # ------------------------------------------------------------------------------
 # 2. PIP PACKAGE (Wheel & Source Distribution)
@@ -101,7 +103,7 @@ clean-deb:
 apk: clean-apk
 	@echo "==> Building native Android release APK via Flet..."
 	@mkdir -p $(DIST_DIR)
-	flet build apk \
+	$(FLET_BIN) build apk \
 		--project "hungrygohappy" \
 		--product "HungryGoHappy" \
 		--org "app.lovable.hungrygohappy" \
